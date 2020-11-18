@@ -1,26 +1,24 @@
 <template>
-  <div id="app">
+  <el-container>
+    <el-header>Header</el-header>
     <el-container>
-      <el-header>Header</el-header>
-      <el-container>
-        <el-aside width="200px">Aside</el-aside>
-        <el-main>
-          <TVCard
-            v-for="(item, index) in items"
-            v-bind:key="index"
-            :tvid="item.id"
-          />
-        </el-main>
-      </el-container>
+      <el-aside width="200px">Aside</el-aside>
+      <el-main>
+        <TVCard
+          v-for="(item, index) in items"
+          v-bind:key="index"
+          :tvid="item.id"
+        />
+      </el-main>
     </el-container>
-  </div>
+  </el-container>
 </template>
 
 <script>
-import TVCard from "./components/TVCard.vue";
+import TVCard from "./TVCard.vue";
 
 export default {
-  name: "app",
+  name: "wall",
   components: {
     TVCard,
   },
@@ -33,14 +31,6 @@ export default {
 </script>
 
 <style>
-#app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
 .el-header,
 .el-footer {
   background-color: #B3C0D1;
@@ -60,9 +50,10 @@ export default {
   background-color: #E9EEF3;
   color: #333;
   text-align: center;
+  line-height: 160px;
 }
 
 .el-container {
   margin-bottom: 40px;
 }
-</style>
+</style>>
