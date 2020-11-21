@@ -1,5 +1,5 @@
 <template>
-  <el-row type="flex" class="row-bg" justify="space-around">
+  <el-row type="flex" class="row-bg-card" justify="space-around">
     <el-col :span="22">
       <el-card shadow="hover" :body-style="{ padding: '0px' }">
         <el-row :gutter="20">
@@ -33,7 +33,7 @@
               v-on:click="expand = !expand"
             >
               <el-col :span="16" class="show_title">
-                {{ name }}
+                {{ tv.name }}
               </el-col>
               <el-col :span="8" class="show_rate">
                 <el-rate
@@ -48,9 +48,9 @@
               </el-col>
             </el-row>
             <el-row type="flex">
-              <span>{{ networks }}</span>
+              <span>{{ tv.networks[0].name }}</span>
               <el-divider direction="vertical"></el-divider>
-              <span>{{ status }}</span>
+              <span>{{ tv.status }}</span>
             </el-row>
             <el-row class="progress">
               <el-progress
@@ -60,7 +60,7 @@
               ></el-progress>
             </el-row>
             <el-row class="season_tab" v-if="expand">
-              <SeasonTabs v-bind:SeasonList="season_list" />
+              <SeasonTabs v-bind:SeasonList="tv.seasons" />
             </el-row>
           </el-col>
         </el-row>
@@ -70,7 +70,7 @@
 </template>
 
 <style>
-.row-bg {
+.row-bg-card {
   margin-bottom: 20px;
 }
 
@@ -160,7 +160,7 @@ import SeasonTabs from "./SeasonTabs.vue";
 export default {
   name: "TVCard",
   props: {
-    tvid: String,
+    tv: Object,
   },
   components: {
     SeasonTabs,
@@ -171,32 +171,15 @@ export default {
       backdrop_url:
         "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif",
       poster_url: "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif",
-      name: "",
       value: 0,
-      status: "",
-      networks: "",
       percentage: 15,
-      season_list: [],
     };
   },
   mounted() {
-    const bent = require("bent");
-    const getJson = bent("json");
-
-    (async () => {
-      let obj = await getJson(
-        "https://api.themoviedb.org/3/tv/" +
-          this.tvid +
-          "?api_key=49ae83b320a43c660d6fa4b4dae9ea79&language=en-US"
-      );
-      this.name = obj.name;
-      this.value = obj.vote_average;
-      this.status = obj.status;
-      this.networks = obj.networks[0].name;
-      this.backdrop_url = "https://image.tmdb.org/t/p/w300" + obj.backdrop_path;
-      this.poster_url = "https://image.tmdb.org/t/p/w300" + obj.poster_path;
-      this.season_list = obj.seasons;
-    })();
+    this.value = this.tv.vote_average;
+    this.backdrop_url =
+      "https://image.tmdb.org/t/p/w300" + this.tv.backdrop_path;
+    this.poster_url = "https://image.tmdb.org/t/p/w300" + this.tv.poster_path;
   },
 };
 </script>

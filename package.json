@@ -11,6 +11,8 @@
     "bent": "^7.3.12",
     "core-js": "^3.6.5",
     "element-ui": "^2.4.5",
+    "fs": "0.0.1-security",
+    "underscore": "^1.11.0",
     "vue": "^2.6.11"
   },
   "devDependencies": {
