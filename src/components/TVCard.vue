@@ -15,13 +15,14 @@
               <el-image
                 key="backdrop"
                 style="width: 100%; height: 100%"
-                :src="backdrop_url"
+                :src="genUrl(tv.backdrop_path)"
                 v-if="!expand"
               />
+
               <el-image
                 key="poster"
                 style="width: 100%; height: 100%"
-                :src="poster_url"
+                :src="genUrl(tv.poster_path)"
                 v-else
               />
             </transition>
@@ -37,7 +38,7 @@
               </el-col>
               <el-col :span="8" class="show_rate">
                 <el-rate
-                  v-model="value"
+                  v-model="tv.vote_average"
                   disabled
                   show-score
                   :max="10"
@@ -60,7 +61,7 @@
               ></el-progress>
             </el-row>
             <el-row class="season_tab" v-if="expand">
-              <SeasonTabs v-bind:SeasonList="tv.seasons" />
+              <SeasonTabs v-bind:tvid="tv.id" />
             </el-row>
           </el-col>
         </el-row>
@@ -71,7 +72,7 @@
 
 <style>
 .row-bg-card {
-  margin-bottom: 20px;
+  /* margin-bottom: 20px; */
 }
 
 .backdrop_col {
@@ -160,7 +161,7 @@ import SeasonTabs from "./SeasonTabs.vue";
 export default {
   name: "TVCard",
   props: {
-    tv: Object,
+    tvidx: Number,
   },
   components: {
     SeasonTabs,
@@ -171,15 +172,39 @@ export default {
       backdrop_url:
         "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif",
       poster_url: "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif",
-      value: 0,
-      percentage: 15,
+      // tv: {},
     };
   },
-  mounted() {
-    this.value = this.tv.vote_average;
-    this.backdrop_url =
-      "https://image.tmdb.org/t/p/w300" + this.tv.backdrop_path;
-    this.poster_url = "https://image.tmdb.org/t/p/w300" + this.tv.poster_path;
+  computed: {
+    tv() {
+      return this.$store.getters.getUserData.tvs[this.tvidx];
+    },
+    percentage(total, watched) {
+      total = this.tv.seasons.reduce(
+        (acc, season) => acc + season.episode_count,
+        0
+      );
+      watched =
+        this.tv.seasons
+          .filter((season) => season.isFinished)
+          .reduce((acc, season) => acc + season.episode_count, 0) +
+        this.tv.seasons
+          .filter((season) => !season.isFinished)
+          .reduce(
+            (acc, season) =>
+              acc +
+              season.episodes.filter((episode) => episode.isFinished).length,
+            0
+          );
+      // console.log(total, watched);
+      return parseInt(((watched / total) * 100).toFixed(0));
+    },
   },
+  methods: {
+    genUrl(path) {
+      return `https://image.tmdb.org/t/p/w300${path}`;
+    },
+  },
+  mounted() {},
 };
 </script>

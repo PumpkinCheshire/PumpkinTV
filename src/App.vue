@@ -40,11 +40,7 @@ export default {
     CardTable,
     FunctionBar,
   },
-  data() {
-    return {
-      items: [{ id: "82856" }, { id: "82857" }, { id: "82858" }],
-    };
-  },
+  mounted() {},
 };
 </script>
 
@@ -59,19 +55,21 @@ export default {
 .el-header,
 .el-footer {
   height: auto !important;
+  background-color: #fce4ec;
 }
 
 .el-aside {
-  background-color: #D3DCE6;
+  background-color: #ffb2dd;
   color: #333;
   text-align: center;
   line-height: 200px;
 }
 
 .el-main {
-  background-color: #E9EEF3;
+  background-color: #e9eef3;
   color: #333;
   text-align: center;
+  padding: 0px !important;
 }
 
 .el-container {

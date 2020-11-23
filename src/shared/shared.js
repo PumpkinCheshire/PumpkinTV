@@ -26,9 +26,21 @@ async function initTV(api_key, tvid) {
     tv.mode = "catching"
     await Promise.all(tv.seasons.map(async (season) => {
         season.isFinished = false
-        console.log(`season S${season.season_number}`, season, season.episodes)
+
         await Promise.all(season.episodes.map(episode => {
             episode.isFinished = false
+            if (episode.season_number === 0) {
+                episode.total_number = episode.episode_number
+            }
+
+            if (episode.season_number === 1) {
+                episode.total_number = episode.episode_number
+            }
+
+            episode.total_number = tv.seasons.filter((season) =>
+                season.season_number < episode.season_number &&
+                season.season_number > 0).reduce((acc, season) => acc + season.episode_count, 0) + episode.episode_number
+
         }))
     }))
     return tv

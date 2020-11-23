@@ -39,30 +39,23 @@
 </template>
 
 <script>
-import shared from "../shared/shared.js";
+// import shared from "../shared/shared.js";
 
 export default {
   name: "BackupRecover",
   data() {
     return {
       dialogTableVisible: false,
-      userData: { api_key: "49ae83b320a43c660d6fa4b4dae9ea79", tvs: [] },
+      // userData: { api_key: "49ae83b320a43c660d6fa4b4dae9ea79", tvs: [] },
       fileList: [],
     };
   },
   created() {
-    this.saveUserData = shared.saveUserData;
+    // this.saveUserData = shared.saveUserData;
   },
   methods: {
     dlJson() {
-      if (localStorage.getItem("userData")) {
-        try {
-          this.userData = JSON.parse(localStorage.getItem("userData"));
-        } catch (e) {
-          console.log("Error, local data damaged.");
-        }
-      }
-      const data = JSON.stringify(this.userData);
+      const data = JSON.stringify(this.$store.getters.getUserData);
       const blob = new Blob([data], { type: "text/plain" });
       const a = document.createElement("a");
       a.download = "userData.json";
@@ -77,15 +70,14 @@ export default {
       reader.readAsText(param.file);
       reader.onload = async (e) => {
         try {
-          this.userData = await JSON.parse(e.target.result);
-          console.log(this.userData);
-          this.saveUserData(this.userData);
+          this.$store.commit("loadUserData", JSON.parse(e.target.result));
+          console.log(this.$store.getters.getUserData);
+          // this.saveUserData(this.$store.getters.getUserData);
           await param.onSuccess();
         } catch (err) {
           console.log(`Load JSON file error: ${err.message}`);
         }
       };
-      param.onSuccess();
     },
     handleCommand(command) {
       if (command === "dl") {

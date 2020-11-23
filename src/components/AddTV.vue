@@ -64,7 +64,6 @@
 const bent = require("bent");
 const getJson = bent("json");
 import shared from "../shared/shared.js";
-import _ from "lodash";
 
 export default {
   name: "AddTV",
@@ -76,21 +75,12 @@ export default {
         name: "",
       },
       tvid: 0,
-      userData: { api_key: "49ae83b320a43c660d6fa4b4dae9ea79", tvs: [] },
+      // userData: { api_key: "49ae83b320a43c660d6fa4b4dae9ea79", tvs: [] },
     };
   },
   created() {
     this.initTV = shared.initTV;
     this.saveUserData = shared.saveUserData;
-  },
-  mounted() {
-    if (localStorage.getItem("userData")) {
-      try {
-        this.userData = JSON.parse(localStorage.getItem("userData"));
-      } catch (e) {
-        console.log("Error, local data damaged.");
-      }
-    }
   },
   methods: {
     querySearch(queryString, cb) {
@@ -114,37 +104,25 @@ export default {
     },
     onSubmit() {
       this.dialogFormVisible = false;
-      if (this.tvid === 0) {
-        return;
-      }
-      var idx = this.userData.tvs.map((tv) => tv.id).indexOf(this.tvid);
-      console.log(idx);
-      if (
-        idx >= 0 &&
-        (this.userData.tvs[idx].status === "Ended" ||
-          this.userData.tvs[idx].mode === "stopped" ||
-          (this.userData.tvs[idx].mode === "finished" &&
-            this.userData.tvs[idx].status !== "Ended"))
-      ) {
-        console.log("Already existed and no need to update");
-        return;
-      }
 
       (async () => {
-        var newTV = await this.initTV(this.userData.api_key, this.tvid);
-        console.log(newTV);
-        if (idx < 0) {
-          this.userData.tvs.push(newTV);
-          console.log(`${newTV.name} added`);
+        var addable = await this.$store.getters.isAddable(this.tvid);
+        console.log("I am addable", addable);
+        if (addable === false) {
+          console.log("Nothing to update or add");
         } else {
-          _.extend(this.userData.tvs[idx], newTV);
-          console.log(`${this.userData.tvs[idx].name} got updated`);
+          var newTV = await this.initTV(
+            this.$store.getters.getUserData.api_key,
+            this.tvid
+          );
+          if (addable === true) {
+            this.$store.commit("addTV2UserData", newTV);
+          } else {
+            this.$store.commit("updateUserDataTV", newTV, addable);
+          }
+          this.tvid = await 0;
+          console.log(this.$store.getters.getUserData);
         }
-        this.userData.tvs = await this.userData.tvs.filter(
-          (item) => item !== null
-        );
-        this.tvid = await 0;
-        this.saveUserData(await this.userData);
       })();
     },
   },
