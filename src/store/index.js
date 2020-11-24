@@ -11,6 +11,12 @@ const store = new Vuex.Store({
 
     },
     getters: {
+        getAPI: (state) => {
+            return state.userData.api_key
+        },
+        getTVs: (state) => {
+            return state.userData.tvs
+        },
         getUserData: (state) => {
             return state.userData
         },
@@ -59,8 +65,10 @@ const store = new Vuex.Store({
             }
         }
 
-    }, mutations: {
-        addTV2UserData(state, newTV) {
+    },
+
+    mutations: {
+        addTV(state, newTV) {
             console.log(newTV)
             state.userData.tvs.unshift(newTV)
         },
@@ -68,44 +76,118 @@ const store = new Vuex.Store({
             state.userData = newUserData
         },
 
-        updateUserDataTV(state, tv, idx) {
-            _.extend(state.tvs[idx], tv)
+        updateTV(state, { tv: tv, addable: idx }) {
+            console.log("Update", tv, idx)
+            _.extend(state.userData.tvs[idx], tv)
+            console.log(idx, "Updated")
         },
 
         markWatched(state, infoAll) {
             var { isAll, info } = infoAll
             console.log("mark isall", isAll)
             var { tvid, season_number, episode_number } = info
-
+            var time = new Date()
+            var curTime = `${time.getFullYear()}-${("0" + time.getMonth()).slice(-2)}-${("0" + time.getDate()).slice(-2)}`
             let tvidx = state.userData.tvs.findIndex(tv => tv.id === tvid)
 
             let seasonidx = state.userData.tvs[tvidx].seasons.findIndex(season => season.season_number === season_number)
 
             let episodeidx = state.userData.tvs[tvidx].seasons[seasonidx].episodes.findIndex(episode => episode.episode_number === episode_number)
-            console.log("mark, idxs", tvidx, seasonidx, episodeidx)
+
             state.userData.tvs[tvidx].seasons[seasonidx].episodes[episodeidx].isFinished = true
+            state.userData.tvs[tvidx].seasons[seasonidx].episodes[episodeidx].finishedDate = curTime
 
             if (isAll) {
                 if (season_number > 1) {
                     state.userData.tvs[tvidx].seasons.filter(season => season.season_number < season_number && season.season_number > 0).forEach(season => {
-                        season.episodes.forEach(episode => episode.isFinished = true)
+                        season.episodes.forEach(episode => {
+                            episode.isFinished = true
+                            episode.finishedDate = curTime
+                        })
                         season.isFinished = true
+                        season.finishedDate = curTime
                     })
                 }
                 if (episode_number > 1) {
-                    state.userData.tvs[tvidx].seasons[seasonidx].episodes.filter(episode => episode.episode_number < episode_number).forEach(episode => episode.isFinished = true)
+                    state.userData.tvs[tvidx].seasons[seasonidx].episodes.filter(episode => episode.episode_number < episode_number).forEach(episode => {
+                        episode.isFinished = true
+                        episode.finishedDate = curTime
+                    })
                 }
 
             }
 
             if (state.userData.tvs[tvidx].seasons[seasonidx].episodes.every(episode => episode.isFinished)) {
                 state.userData.tvs[tvidx].seasons[seasonidx].isFinished = true
+                state.userData.tvs[tvidx].seasons[seasonidx].finishedDate = curTime
             }
 
             if (state.userData.tvs[tvidx].seasons.every(season => season.isFinished)) {
                 state.userData.tvs[tvidx].isFinished = true
+                state.userData.tvs[tvidx].finishedDate = curTime
             }
         },
+
+    },
+
+    actions: {
+        async addTV(context, tvid) {
+            const bent = require("bent")
+            const getJson = bent("json")
+
+            var addable = context.getters.isAddable(tvid)
+            if (addable === false) {
+                console.log("Nothing to update or add")
+            } else {
+                let api = await context.getters.getAPI
+                let tv = await getJson(
+                    `https://api.themoviedb.org/3/tv/${tvid}?api_key=${api}&language=en-US`
+                )
+                await Promise.all(tv.seasons.map(async (season) => {
+                    let detailSeason = await getJson(
+                        `https://api.themoviedb.org/3/tv/${tvid}/season/${season.season_number}?api_key=${api}&language=en-US`
+                    )
+                    season.episodes = await detailSeason.episodes
+                }))
+
+                tv.isFinished = "false"
+                tv.mode = "catching"
+                tv.finishedDate = null
+
+                await Promise.all(tv.seasons.map(async (season) => {
+                    season.isFinished = false
+                    season.finishedDate = null
+
+                    await Promise.all(season.episodes.map(episode => {
+                        episode.isFinished = false
+                        episode.finishedDate = null
+                        if (episode.season_number === 0) {
+                            episode.total_number = episode.episode_number
+                        }
+
+                        if (episode.season_number === 1) {
+                            episode.total_number = episode.episode_number
+                        }
+
+                        episode.total_number = tv.seasons.filter((season) =>
+                            season.season_number < episode.season_number &&
+                            season.season_number > 0).reduce((acc, season) => acc + season.episode_count, 0) + episode.episode_number
+
+                    }))
+                }))
+                if (addable === true) {
+                    context.commit("addTV", tv)
+                }
+                else {
+                    console.log("Update because", addable)
+                    context.commit("updateTV", { tv: tv, addable: addable })
+                }
+
+            }
+
+
+        }
+
 
     },
     plugins: [createPersistedState()]

@@ -104,26 +104,7 @@ export default {
     },
     onSubmit() {
       this.dialogFormVisible = false;
-
-      (async () => {
-        var addable = await this.$store.getters.isAddable(this.tvid);
-        console.log("I am addable", addable);
-        if (addable === false) {
-          console.log("Nothing to update or add");
-        } else {
-          var newTV = await this.initTV(
-            this.$store.getters.getUserData.api_key,
-            this.tvid
-          );
-          if (addable === true) {
-            this.$store.commit("addTV2UserData", newTV);
-          } else {
-            this.$store.commit("updateUserDataTV", newTV, addable);
-          }
-          this.tvid = await 0;
-          console.log(this.$store.getters.getUserData);
-        }
-      })();
+      this.$store.dispatch("addTV", this.tvid);
     },
   },
 };
