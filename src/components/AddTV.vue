@@ -63,7 +63,6 @@
 <script>
 const bent = require("bent");
 const getJson = bent("json");
-import shared from "../shared/shared.js";
 
 export default {
   name: "AddTV",
@@ -78,10 +77,7 @@ export default {
       // userData: { api_key: "49ae83b320a43c660d6fa4b4dae9ea79", tvs: [] },
     };
   },
-  created() {
-    this.initTV = shared.initTV;
-    this.saveUserData = shared.saveUserData;
-  },
+  created() {},
   methods: {
     querySearch(queryString, cb) {
       var queryString_url = encodeURI(queryString);

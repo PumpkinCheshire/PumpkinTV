@@ -177,13 +177,15 @@ export default {
   },
   computed: {
     tv() {
-      return this.$store.getters.getUserData.tvs[this.tvidx];
+      return this.$store.getters.getTVByIdx(this.tvidx);
     },
     percentage(total, watched) {
-      total = this.tv.seasons.reduce(
-        (acc, season) => acc + season.episode_count,
-        0
-      );
+      console.log(this.tv.seasons);
+      total =
+        this.tv.number_of_episodes -
+        (this.tv.seasons.slice(-1)[0].episode_count -
+          this.tv.last_episode_to_air.episode_number);
+      console.log(this.tv.seasons.slice(-1)[0].episode_count);
       watched =
         this.tv.seasons
           .filter((season) => season.isFinished)

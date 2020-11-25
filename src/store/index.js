@@ -14,12 +14,23 @@ const store = new Vuex.Store({
         getAPI: (state) => {
             return state.userData.api_key
         },
-        getTVs: (state) => {
-            return state.userData.tvs
+
+        getTVByIdx: (state) => {
+            return (tvidx) => {
+                return state.userData.tvs[tvidx]
+            }
         },
+
+        getTVByID: (state) => {
+            return (tvid) => {
+                return state.userData.tvs.find(tv => tv.id === tvid)
+            }
+        },
+
         getUserData: (state) => {
             return state.userData
         },
+
         isAddable(state) {
             return (tvid) => {
                 if (tvid === 0) {
@@ -48,13 +59,13 @@ const store = new Vuex.Store({
         isAllable(state) {
             return (info) => {
                 var { tvid, season_number, episode_number } = info
-                console.log("allable, input", info)
+
                 let tvidx = state.userData.tvs.findIndex(tv => tv.id === tvid)
 
                 let seasonidx = state.userData.tvs[tvidx].seasons.findIndex(season => season.season_number === season_number)
 
                 // let episodeidx = state.userData.tvs[tvidx].seasons[seasonidx].episodes.findIndex(episode => episode.episode_number === episode_number)
-                console.log("allable, idxs", tvidx, seasonidx)
+
                 if (season_number > 1 && episode_number > 1) {
                     return !(state.userData.tvs[tvidx].seasons.filter(season => season.season_number < season_number).every(season => season.isFinished) && state.userData.tvs[tvidx].seasons[seasonidx].episodes.filter(episode => episode.episode_number < episode_number).every(episode => episode.isFinished))
                 }
@@ -76,9 +87,9 @@ const store = new Vuex.Store({
             state.userData = newUserData
         },
 
-        updateTV(state, { tv: tv, addable: idx }) {
-            console.log("Update", tv, idx)
-            _.extend(state.userData.tvs[idx], tv)
+        updateTV(state, { updater: updater, addable: idx }) {
+            console.log("Update", updater, idx)
+            _.merge(state.userData.tvs[idx], updater)
             console.log(idx, "Updated")
         },
 
@@ -86,8 +97,8 @@ const store = new Vuex.Store({
             var { isAll, info } = infoAll
             console.log("mark isall", isAll)
             var { tvid, season_number, episode_number } = info
-            var time = new Date()
-            var curTime = `${time.getFullYear()}-${("0" + time.getMonth()).slice(-2)}-${("0" + time.getDate()).slice(-2)}`
+            var curTime = new Date()
+
             let tvidx = state.userData.tvs.findIndex(tv => tv.id === tvid)
 
             let seasonidx = state.userData.tvs[tvidx].seasons.findIndex(season => season.season_number === season_number)
@@ -126,6 +137,40 @@ const store = new Vuex.Store({
                 state.userData.tvs[tvidx].isFinished = true
                 state.userData.tvs[tvidx].finishedDate = curTime
             }
+
+            var where_am_i = state.userData.tvs[tvidx].seasons.filter(season =>
+                season.episodes.some(episode => episode.isFinished === true)
+            ).slice(-1)[0].episodes.filter(episode => episode.isFinished === true).slice(-1)[0]
+
+            state.userData.tvs[tvidx].where_am_i = {
+                season_number: where_am_i.season_number, episode_number: where_am_i.episode_number
+            }
+        },
+        unmarkWatched(state, info) {
+            var { tvid, season_number, episode_number } = info
+            console.log(tvid, season_number, episode_number)
+            let tvidx = state.userData.tvs.findIndex(tv => tv.id === tvid)
+
+            let seasonidx = state.userData.tvs[tvidx].seasons.findIndex(season => season.season_number === season_number)
+
+            let episodeidx = state.userData.tvs[tvidx].seasons[seasonidx].episodes.findIndex(episode => episode.episode_number === episode_number)
+
+            state.userData.tvs[tvidx].seasons[seasonidx].episodes[episodeidx].isFinished = false
+            state.userData.tvs[tvidx].seasons[seasonidx].episodes[episodeidx].finishedDate = null
+
+            state.userData.tvs[tvidx].seasons[seasonidx].isFinished = false
+            state.userData.tvs[tvidx].seasons[seasonidx].finishedDate = null
+
+            state.userData.tvs[tvidx].isFinished = false
+            state.userData.tvs[tvidx].finishedDate = null
+
+            var where_am_i = state.userData.tvs[tvidx].seasons.filter(season =>
+                season.episodes.some(episode => episode.isFinished === true)
+            ).slice(-1)[0].episodes.filter(episode => episode.isFinished === true).slice(-1)[0]
+
+            state.userData.tvs[tvidx].where_am_i = {
+                season_number: where_am_i.season_number, episode_number: where_am_i.episode_number
+            }
         },
 
     },
@@ -143,12 +188,35 @@ const store = new Vuex.Store({
                 let tv = await getJson(
                     `https://api.themoviedb.org/3/tv/${tvid}?api_key=${api}&language=en-US`
                 )
+                tv.first_air_date = new Date(tv.first_air_date)
+                tv.last_air_date = new Date(tv.last_air_date)
+                tv.last_episode_to_air.air_date = new Date(tv.last_episode_to_air.air_date)
+                if (tv.next_episode_to_air !== null) {
+                    tv.next_episode_to_air.air_date = new Date(tv.next_episode_to_air.air_date)
+                }
                 await Promise.all(tv.seasons.map(async (season) => {
                     let detailSeason = await getJson(
                         `https://api.themoviedb.org/3/tv/${tvid}/season/${season.season_number}?api_key=${api}&language=en-US`
                     )
                     season.episodes = await detailSeason.episodes
+                    season.air_date = new Date(season.air_date)
+                    await Promise.all(season.episodes.map(episode => {
+                        episode.air_date = new Date(episode.air_date)
+                        if (episode.season_number === 0) {
+                            episode.total_number = episode.episode_number
+                        }
+
+                        if (episode.season_number === 1) {
+                            episode.total_number = episode.episode_number
+                        }
+
+                        episode.total_number = tv.seasons.filter((season) =>
+                            season.season_number < episode.season_number &&
+                            season.season_number > 0).reduce((acc, season) => acc + season.episode_count, 0) + episode.episode_number
+                    }))
                 }))
+
+                var updater = await JSON.parse(JSON.stringify(tv))
 
                 tv.isFinished = "false"
                 tv.mode = "catching"
@@ -161,26 +229,25 @@ const store = new Vuex.Store({
                     await Promise.all(season.episodes.map(episode => {
                         episode.isFinished = false
                         episode.finishedDate = null
-                        if (episode.season_number === 0) {
-                            episode.total_number = episode.episode_number
-                        }
 
-                        if (episode.season_number === 1) {
-                            episode.total_number = episode.episode_number
-                        }
-
-                        episode.total_number = tv.seasons.filter((season) =>
-                            season.season_number < episode.season_number &&
-                            season.season_number > 0).reduce((acc, season) => acc + season.episode_count, 0) + episode.episode_number
 
                     }))
                 }))
+                var where_am_i = await tv.seasons.find(season => season.season_number === 1).episodes.find(episode => episode.episode_number === 1)
+
+                tv.where_am_i = {
+                    season_number: where_am_i.season_number,
+                    episode_number: where_am_i.episode_number
+                }
+
+                tv = await JSON.parse(JSON.stringify(tv))
+
                 if (addable === true) {
                     context.commit("addTV", tv)
                 }
                 else {
                     console.log("Update because", addable)
-                    context.commit("updateTV", { tv: tv, addable: addable })
+                    context.commit("updateTV", { updater: updater, addable: addable })
                 }
 
             }
