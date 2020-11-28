@@ -22,7 +22,7 @@
               <el-image
                 key="poster"
                 style="width: 100%; height: 100%"
-                :src="genUrl(tv.poster_path)"
+                :src="genUrl(season_poster)"
                 v-else
               />
             </transition>
@@ -49,6 +49,11 @@
               </el-col>
             </el-row>
             <el-row type="flex">
+              <el-image
+                :src="genUrl(tv.networks[0].logo_path)"
+                style="width: 48px; height: 16px"
+                fit="scale-down"
+              />
               <span>{{ tv.networks[0].name }}</span>
               <el-divider direction="vertical"></el-divider>
               <span>{{ tv.status }}</span>
@@ -61,7 +66,11 @@
               ></el-progress>
             </el-row>
             <el-row class="season_tab" v-if="expand">
-              <SeasonTabs v-bind:tvid="tv.id" />
+              <SeasonTabs
+                v-bind:seasons="tv.seasons"
+                v-bind:tvid="tvid"
+                @passSeasonPoster="season_poster = $event"
+              />
             </el-row>
           </el-col>
         </el-row>
@@ -71,10 +80,6 @@
 </template>
 
 <style>
-.row-bg-card {
-  /* margin-bottom: 20px; */
-}
-
 .backdrop_col {
   width: 300px !important;
   height: 169px !important;
@@ -172,41 +177,49 @@ export default {
       backdrop_url:
         "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif",
       poster_url: "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif",
-      // tv: {},
+      season_poster:
+        "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif",
     };
   },
   computed: {
     tv() {
       return this.$store.getters.getTVByIdx(this.tvidx);
     },
+    tvid() {
+      return this.tv.id;
+    },
     percentage(total, watched) {
-      console.log(this.tv.seasons);
       total =
         this.tv.number_of_episodes -
         (this.tv.seasons.slice(-1)[0].episode_count -
           this.tv.last_episode_to_air.episode_number);
-      console.log(this.tv.seasons.slice(-1)[0].episode_count);
+
       watched =
         this.tv.seasons
-          .filter((season) => season.isFinished)
+          .filter((season) => season.season_number !== 0 && season.isFinished)
           .reduce((acc, season) => acc + season.episode_count, 0) +
         this.tv.seasons
-          .filter((season) => !season.isFinished)
+          .filter((season) => season.season_number !== 0 && !season.isFinished)
           .reduce(
             (acc, season) =>
               acc +
               season.episodes.filter((episode) => episode.isFinished).length,
             0
           );
-      // console.log(total, watched);
-      return parseInt(((watched / total) * 100).toFixed(0));
+      console.log(
+        "total,watched",
+        parseFloat(((watched / total) * 100).toFixed(2))
+      );
+      return parseFloat(((watched / total) * 100).toFixed(2));
     },
   },
   methods: {
     genUrl(path) {
-      return `https://image.tmdb.org/t/p/w300${path}`;
+      return `https://image.tmdb.org/t/p/original${path}`;
     },
   },
-  mounted() {},
+  mounted() {
+    this.tvid = this.$store.getters.getTVByIdx(this.tvidx).id;
+  },
 };
 </script>

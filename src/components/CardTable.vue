@@ -1,5 +1,5 @@
 <template>
-  <el-table :show-header="false" :data="this.$store.getters.getUserData.tvs">
+  <el-table :show-header="false" :data="tvs">
     <el-table-column label="name">
       <template slot-scope="scope">
         <TVCard v-bind:tvidx="scope.$index" />
@@ -16,8 +16,14 @@ export default {
   components: {
     TVCard,
   },
-  data() {
-    return {};
+  props: {
+    mode: String,
+  },
+  computed: {
+    tvs() {
+      console.log(this.$store.getters.getTVsByMode(this.mode));
+      return this.$store.getters.getTVsByMode(this.mode);
+    },
   },
 };
 </script>

@@ -1,7 +1,12 @@
 <template>
-  <el-tabs type="border-card" v-model="activeName" style="season-tab">
+  <el-tabs
+    type="border-card"
+    v-model="activeName"
+    style="season-tab"
+    @tab-click="changeSeason"
+  >
     <el-tab-pane
-      v-for="season in SeasonList"
+      v-for="season in seasons"
       :key="season.id"
       :label="season.name"
       :name="season.name"
@@ -19,6 +24,7 @@ import EpisodeCarousel from "./EpisodeCarousel.vue";
 export default {
   name: "SeasonTabs",
   props: {
+    seasons: Array,
     tvid: Number,
   },
   components: {
@@ -26,17 +32,34 @@ export default {
   },
 
   created() {
-    this.SeasonList = this.$store.getters.getTVByID(this.tvid).seasons;
+    // this.seasons = this.$store.getters.getTVByID(this.tvid).seasons;
 
-    this.activeName = this.SeasonList.find(
+    this.activeName = this.seasons.find(
       (season) =>
         season.season_number ===
         this.$store.getters.getTVByID(this.tvid).where_am_i.season_number
     ).name;
+
+    this.$emit(
+      "passSeasonPoster",
+      this.seasons.find(
+        (season) =>
+          season.season_number ===
+          this.$store.getters.getTVByID(this.tvid).where_am_i.season_number
+      ).poster_path
+    );
   },
   computed: {
     isAllable() {
       return this.$store.getters.isAllable;
+    },
+  },
+  methods: {
+    changeSeason(tab) {
+      this.$emit(
+        "passSeasonPoster",
+        this.$store.getters.getTVByID(this.tvid).seasons[tab.index].poster_path
+      );
     },
   },
 };
@@ -71,5 +94,9 @@ export default {
 
 .title-divider {
   background-color: transparent !important;
+}
+
+.el-tabs__item {
+  user-select: none;
 }
 </style>

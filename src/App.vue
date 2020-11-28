@@ -16,14 +16,14 @@
         </el-row>
       </el-header>
       <el-container>
-        <el-aside width="200px">Aside</el-aside>
+        <el-aside width="200px"><NavMenu @setMenu="mode = $event" /></el-aside>
         <el-main>
           <!-- <TVCard
             v-for="(item, index) in items"
             v-bind:key="index"
             :tvid="item.id"
           /> -->
-          <CardTable />
+          <CardTable v-bind:mode="mode" />
         </el-main>
       </el-container>
     </el-container>
@@ -33,14 +33,20 @@
 <script>
 import CardTable from "./components/CardTable.vue";
 import FunctionBar from "./components/FunctionBar.vue";
+import NavMenu from "./components/NavMenu.vue";
 
 export default {
   name: "app",
   components: {
     CardTable,
     FunctionBar,
+    NavMenu,
   },
-  mounted() {},
+  data() {
+    return {
+      mode: "catching",
+    };
+  },
 };
 </script>
 

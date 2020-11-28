@@ -17,7 +17,9 @@
       >
         <el-card
           class="episode-card"
-          v-bind:style="`background-image: -webkit-cross-fade(url(data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=),url(https://image.tmdb.org/t/p/original${episode.still_path}),40%);border:transparent;background-size:cover;background-repeat:no-repeat`"
+          v-bind:style="`background-image: -webkit-cross-fade(url(data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=),url(https://image.tmdb.org/t/p/original${
+            episode.still_path ? episode.still_path : tv.backdrop_path
+          }),30%);border:transparent;background-size:cover;background-repeat:no-repeat`"
           v-if="
             episode.episode_number >= slide - 2 &&
             episode.episode_number <= slide + 2
@@ -42,50 +44,71 @@
             <i class="el-icon-date" style="margin-right: 5px" />
             <span>{{ episode.air_date.slice(0, 10) }}</span>
           </el-row>
-          <el-row>
-            <el-popconfirm
-              confirm-button-text="Yes"
-              cancel-button-text="No"
-              title="Mark all previous episodes as watched？"
-              v-if="
-                !episode.isFinished &&
-                isAllable({
-                  tvid: tvid,
-                  season_number: season.season_number,
-                  episode_number: episode.episode_number,
-                })
-              "
-              @confirm="
-                markWatched(season.season_number, episode.episode_number, true)
-              "
-              @cancel="
-                markWatched(season.season_number, episode.episode_number, false)
-              "
-            >
+          <el-row class="episode-overview">
+            <span style="visibility: visible">{{ episode.overview }}</span>
+          </el-row>
+          <el-row class="mark-button">
+            <el-col :span="22" style="line-height: 40px; padding-right: 10px"
+              ><span v-if="episode.isFinished"
+                >Watched on {{ episode.finishedDate.slice(0, 10) }}</span
+              ><el-divider direction="vertical"></el-divider>
+            </el-col>
+            <el-col :span="2">
+              <el-popconfirm
+                confirm-button-text="Yes"
+                cancel-button-text="No"
+                title="Mark all previous episodes as watched？"
+                v-if="
+                  !episode.isFinished &&
+                  isAllable({
+                    tvid: tvid,
+                    season_number: season.season_number,
+                    episode_number: episode.episode_number,
+                  })
+                "
+                @confirm="
+                  markWatched(
+                    season.season_number,
+                    episode.episode_number,
+                    true
+                  )
+                "
+                @cancel="
+                  markWatched(
+                    season.season_number,
+                    episode.episode_number,
+                    false
+                  )
+                "
+              >
+                <el-button
+                  slot="reference"
+                  icon="el-icon-check"
+                  :type="episode.isFinished ? 'primary' : ''"
+                  circle
+                  :data-season="season.season_number"
+                  :data-episode="episode.episode_number"
+                />
+              </el-popconfirm>
               <el-button
-                slot="reference"
                 icon="el-icon-check"
                 :type="episode.isFinished ? 'primary' : ''"
                 circle
-                :data-season="season.season_number"
-                :data-episode="episode.episode_number"
+                @click="
+                  episode.isFinished
+                    ? unmarkWatched(
+                        season.season_number,
+                        episode.episode_number
+                      )
+                    : markWatched(
+                        season.season_number,
+                        episode.episode_number,
+                        false
+                      )
+                "
+                v-else
               />
-            </el-popconfirm>
-            <el-button
-              icon="el-icon-check"
-              :type="episode.isFinished ? 'primary' : ''"
-              circle
-              @click="
-                episode.isFinished
-                  ? unmarkWatched(season.season_number, episode.episode_number)
-                  : markWatched(
-                      season.season_number,
-                      episode.episode_number,
-                      false
-                    )
-              "
-              v-else
-            />
+            </el-col>
           </el-row>
         </el-card>
       </el-carousel-item>
@@ -127,6 +150,9 @@ export default {
     isAllable() {
       return this.$store.getters.isAllable;
     },
+    tv() {
+      return this.$store.getters.getTVByID(this.tvid);
+    },
   },
   methods: {
     getFormattedNumber(number) {
@@ -144,7 +170,7 @@ export default {
       }
     },
     markWatched(season_number, episode_number, isAll) {
-      this.$store.commit("markWatched", {
+      this.$store.dispatch("markWatched", {
         isAll: isAll,
         info: {
           tvid: this.tvid,
@@ -175,3 +201,21 @@ export default {
   },
 };
 </script>
+
+<style>
+.episode-overview {
+  height: 48px;
+  line-height: 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.mark-button {
+  margin-top: 5px;
+  text-align: right !important;
+}
+.episode-slider {
+  user-select: none;
+}
+</style>>
