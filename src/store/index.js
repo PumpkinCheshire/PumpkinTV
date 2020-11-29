@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import createPersistedState from 'vuex-persistedstate'
+import VuexPersistence from 'vuex-persist'
+import localforage from 'localforage'
+// import createPersistedState from 'vuex-persistedstate'
 import _ from "lodash"
 
 Vue.use(Vuex);
@@ -23,6 +25,7 @@ const store = new Vuex.Store({
 
         getTVIdxByID: (state) => {
             return (tvid) => {
+                console.log("Getting tvidx by ID", tvid)
                 return state.userData.tvs.findIndex(tv => tv.id === tvid)
             }
         },
@@ -53,7 +56,9 @@ const store = new Vuex.Store({
 
         getTVsByMode: (state) => {
             return (mode) => {
-                console.log("Store", mode)
+                if (mode == "all") {
+                    return state.userData.tvs
+                }
                 return state.userData.tvs.filter(tv => tv.mode === mode)
             }
         },
@@ -97,6 +102,9 @@ const store = new Vuex.Store({
                 if (season_number > 1 && episode_number > 1) {
                     return !(state.userData.tvs[tvidx].seasons.filter(season => season.season_number !== 0 && season.season_number < season_number).every(season => season.isFinished) && state.userData.tvs[tvidx].seasons[seasonidx].episodes.filter(episode => episode.episode_number < episode_number).every(episode => episode.isFinished))
                 }
+                if (season_number > 1 && episode_number == 1) {
+                    return !state.userData.tvs[tvidx].seasons.filter(season => season.season_number !== 0 && season.season_number < season_number).every(season => season.isFinished)
+                }
                 else if (season_number === 1 && episode_number > 1) {
                     return !state.userData.tvs[tvidx].seasons[seasonidx].episodes.filter(episode => episode.episode_number < episode_number).every(episode => episode.isFinished)
                 }
@@ -116,14 +124,13 @@ const store = new Vuex.Store({
         },
 
         updateTV(state, { updater: updater, tvidx: tvidx }) {
-            console.log("Update", updater, tvidx)
             _.merge(state.userData.tvs[tvidx], updater)
-
         },
 
         markEpisodeFinished(state, { tvidx: tvidx, seasonidx: seasonidx, episodeidx: episodeidx, curTime: curTime }) {
             state.userData.tvs[tvidx].seasons[seasonidx].episodes[episodeidx].isFinished = true
             state.userData.tvs[tvidx].seasons[seasonidx].episodes[episodeidx].finishedDate = curTime
+            state.userData.tvs[tvidx].seasons[seasonidx].confidentEpisode = state.userData.tvs[tvidx].seasons[seasonidx].episodes.findIndex(episode => episode.isFinished == false)
         },
 
         markSeasonFinished(state, { tvidx: tvidx, seasonidx: seasonidx, curTime: curTime }) {
@@ -139,6 +146,7 @@ const store = new Vuex.Store({
         unmarkEpisode(state, { tvidx: tvidx, seasonidx: seasonidx, episodeidx: episodeidx }) {
             state.userData.tvs[tvidx].seasons[seasonidx].episodes[episodeidx].isFinished = false
             state.userData.tvs[tvidx].seasons[seasonidx].episodes[episodeidx].finishedDate = null
+            state.userData.tvs[tvidx].seasons[seasonidx].confidentEpisode = state.userData.tvs[tvidx].seasons[seasonidx].episodes.findIndex(episode => episode.isFinished == false)
         },
 
         unmarkSeason(state, { tvidx: tvidx, seasonidx: seasonidx }) {
@@ -152,102 +160,44 @@ const store = new Vuex.Store({
         },
 
         setWhereAmI(state, tvidx) {
-            var where_am_i = state.userData.tvs[tvidx].seasons.filter(season =>
-                season.episodes.some(episode => episode.isFinished === true)
-            ).slice(-1)[0].episodes.filter(episode => episode.isFinished === true).slice(-1)[0]
-
-            state.userData.tvs[tvidx].where_am_i = {
-                season_number: where_am_i.season_number, episode_number: where_am_i.episode_number
+            try {
+                console.log("setting where am i")
+                state.userData.tvs[tvidx].where_am_i = state.userData.tvs[tvidx].seasons.filter(season => season.season_number > 0 && season.episodes.some(episode => episode.isFinished == true)).slice(-1)[0].episodes.filter(episode => episode.isFinished == true).slice(-1)[0]
+                // console.log(state.userData.tvs[tvidx].where_am_i)
+            }
+            catch {
+                console.log("error setting where am i, catching", state.userData)
+                state.userData.tvs[tvidx].where_am_i = state.userData.tvs[tvidx].seasons.find(season => season.season_number === 1).episodes.find(episode => episode.episode_number === 1)
+                console.log('setting where am i to S01E01')
             }
 
         },
 
-        // markWatched(state, infoAll) {
-        //     var { isAll, info } = infoAll
-
-        //     var { tvid, season_number, episode_number } = info
-        //     var curTime = JSON.parse(JSON.stringify(new Date()))
-
-        //     let tvidx = state.userData.tvs.findIndex(tv => tv.id === tvid)
-
-        //     let seasonidx = state.userData.tvs[tvidx].seasons.findIndex(season => season.season_number === season_number)
-
-        //     let episodeidx = state.userData.tvs[tvidx].seasons[seasonidx].episodes.findIndex(episode => episode.episode_number === episode_number)
-
-        //     state.userData.tvs[tvidx].seasons[seasonidx].episodes[episodeidx].isFinished = true
-        //     state.userData.tvs[tvidx].seasons[seasonidx].episodes[episodeidx].finishedDate = curTime
-
-        //     if (isAll) {
-        //         if (season_number > 1) {
-        //             state.userData.tvs[tvidx].seasons.filter(season => season.season_number < season_number && season.season_number > 0).forEach(season => {
-        //                 season.episodes.forEach(episode => {
-        //                     episode.isFinished = true
-        //                     episode.finishedDate = curTime
-        //                 })
-        //                 season.isFinished = true
-        //                 season.finishedDate = curTime
-        //             })
-        //         }
-        //         if (episode_number > 1) {
-        //             state.userData.tvs[tvidx].seasons[seasonidx].episodes.filter(episode => episode.episode_number < episode_number).forEach(episode => {
-        //                 episode.isFinished = true
-        //                 episode.finishedDate = curTime
-        //             })
-        //         }
-
-        //     }
-
-        //     if (state.userData.tvs[tvidx].seasons[seasonidx].episodes.every(episode => episode.isFinished)) {
-        //         state.userData.tvs[tvidx].seasons[seasonidx].isFinished = true
-        //         state.userData.tvs[tvidx].seasons[seasonidx].finishedDate = curTime
-        //     }
-
-        //     if (state.userData.tvs[tvidx].seasons.every(season => season.isFinished)) {
-        //         state.userData.tvs[tvidx].isFinished = true
-        //         state.userData.tvs[tvidx].finishedDate = curTime
-        //     }
-
-        //     var where_am_i = state.userData.tvs[tvidx].seasons.filter(season =>
-        //         season.episodes.some(episode => episode.isFinished === true)
-        //     ).slice(-1)[0].episodes.filter(episode => episode.isFinished === true).slice(-1)[0]
-
-        //     state.userData.tvs[tvidx].where_am_i = {
-        //         season_number: where_am_i.season_number, episode_number: where_am_i.episode_number
-        //     }
-        // },
-        unmarkWatched(state, info) {
-            var { tvid, season_number, episode_number } = info
-            console.log(tvid, season_number, episode_number)
-            let tvidx = state.userData.tvs.findIndex(tv => tv.id === tvid)
-
-            let seasonidx = state.userData.tvs[tvidx].seasons.findIndex(season => season.season_number === season_number)
-
-            let episodeidx = state.userData.tvs[tvidx].seasons[seasonidx].episodes.findIndex(episode => episode.episode_number === episode_number)
-
-            state.userData.tvs[tvidx].seasons[seasonidx].episodes[episodeidx].isFinished = false
-            state.userData.tvs[tvidx].seasons[seasonidx].episodes[episodeidx].finishedDate = null
-
-            state.userData.tvs[tvidx].seasons[seasonidx].isFinished = false
-            state.userData.tvs[tvidx].seasons[seasonidx].finishedDate = null
-
-            state.userData.tvs[tvidx].isFinished = false
-            state.userData.tvs[tvidx].finishedDate = null
-
-            var where_am_i = state.userData.tvs[tvidx].seasons.filter(season =>
-                season.episodes.some(episode => episode.isFinished === true)
-            ).slice(-1)[0].episodes.filter(episode => episode.isFinished === true).slice(-1)[0]
-
-            state.userData.tvs[tvidx].where_am_i = {
-                season_number: where_am_i.season_number, episode_number: where_am_i.episode_number
+        updateMode(state, tvidx) {
+            if (state.userData.tvs[tvidx].mode === "stopped") {
+                return
             }
-        },
-        // updateMode(state, tvid) {
-        //     var tv = state.getters.getTVByID(tvid)
 
-        //     // following: already at the newest episode or one episode behind:
+            if (state.userData.tvs[tvidx].status === "In Production") {
+                state.userData.tvs[tvidx].mode = "upcoming"
+            }
+            else if (state.userData.tvs[tvidx].isFinished === true && (state.userData.tvs[tvidx].status == "Ended" || state.userData.tvs[tvidx].status == "Canceled")) {
+                state.userData.tvs[tvidx].mode = "finished"
+            }
+            else if (!state.userData.tvs[tvidx].seasons.some(season => season.isFinished == true || season.episodes.some(episode => episode.isFinished == true))) {
+                state.userData.tvs[tvidx].mode = "notstart"
+            }
+            else if (state.userData.tvs[tvidx].last_episode_to_air.id === state.userData.tvs[tvidx].where_am_i.id) {
+                state.userData.tvs[tvidx].mode = "following"
+            }
+            else if ((new Date(state.userData.tvs[tvidx].addDate).getTime() + 12096e5) > new Date().getTime() || (new Date(state.userData.tvs[tvidx].where_am_i.finishedDate).getTime() + 12096e5) > new Date().getTime()) {
+                state.userData.tvs[tvidx].mode = "catching"
+            }
+            else {
+                state.userData.tvs[tvidx].mode = "waiting"
+            }
 
-
-        // }
+        }
     },
 
     actions: {
@@ -266,10 +216,12 @@ const store = new Vuex.Store({
                     tv.isFinished = "false"
                     tv.mode = "catching"
                     tv.finishedDate = null
+                    tv.addDate = JSON.parse(JSON.stringify(new Date()))
 
                     await Promise.all(tv.seasons.map(async (season) => {
                         season.isFinished = false
                         season.finishedDate = null
+                        season.confidentEpisode = 0
 
                         await Promise.all(season.episodes.map(episode => {
                             episode.isFinished = false
@@ -280,16 +232,13 @@ const store = new Vuex.Store({
                     }))
                     var where_am_i = await tv.seasons.find(season => season.season_number === 1).episodes.find(episode => episode.episode_number === 1)
 
-                    tv.where_am_i = {
-                        season_number: where_am_i.season_number,
-                        episode_number: where_am_i.episode_number
-                    }
+                    tv.where_am_i = where_am_i
+
                     context.commit("addTV", tv)
                 }
                 else {
                     context.commit("updateTV", { updater: updater, tvidx: addable })
                 }
-
             }
 
 
@@ -300,6 +249,7 @@ const store = new Vuex.Store({
             var tvid = context.getters.getTVIDByIdx(tvidx)
             var updater = await genUpdater(tvid)
             context.commit("updateTV", { updater, tvidx })
+            context.commit("updateMode", tvidx)
         },
 
         markWatched(context, { isAll: isAll, info: { tvid: tvid, season_number: season_number, episode_number: episode_number } }) {
@@ -318,29 +268,35 @@ const store = new Vuex.Store({
 
             if (isAll) {
                 if (season_number > 1) {
-                    tv.seasons.filter(season => season.season_number < season_number && season.season_number > 0).forEach((season, seasonidx) => {
-                        season.episodes.forEach((episode, episodeidx) => {
-                            context.commit("markEpisodeFinished", { tvidx, seasonidx, episodeidx, curTime })
-                        })
-                        context.commit("markSeasonFinished", { tvidx, seasonidx, curTime })
-                    })
-
-                    tv.seasons[seasonidx].episodes.filter(episode => episode.episode_number < episode_number).forEach((episode, episodeidx) => {
-                        context.commit("markEpisodeFinished", { tvidx, seasonidx, episodeidx, curTime })
-                    })
+                    console.log("running previous episodes");
+                    for (var i = 0; i < seasonidx; i++) {
+                        let season = context.getters.getSeasonByIdx(tvidx, i)
+                        if (season.season_number !== 0 && season.isFinished !== true) {
+                            for (var j = season.confidentEpisode; j < season.episode_count; j++) {
+                                if (season.episodes[j].isFinished == false) {
+                                    context.commit("markEpisodeFinished", { tvidx: tvidx, seasonidx: i, episodeidx: j, curTime: curTime })
+                                }
+                            }
+                            context.commit("markSeasonFinished", { tvidx: tvidx, seasonidx: i, curTime: curTime })
+                        }
+                    }
+                }
+                for (var h = tv.seasons[seasonidx].confidentEpisode; h < episodeidx; h++) {
+                    context.commit("markEpisodeFinished", { tvidx: tvidx, seasonidx: seasonidx, episodeidx: h, curTime: curTime })
                 }
 
             }
 
             if (context.getters.getSeasonByIdx(tvidx, seasonidx).episodes.every(episode => episode.isFinished)) {
-                context.commit("markSeaonFinished", { tvidx, seasonidx, curTime })
+                context.commit("markSeasonFinished", { tvidx, seasonidx, curTime })
             }
 
-            if (context.getters.getTVByIdx(tvidx).seasons.every(season => season.isFinished)) {
+            if (context.getters.getTVByIdx(tvidx).seasons.filter(season => season.season_number > 0).every(season => season.isFinished)) {
                 context.commit("markTVFinished", { tvidx, curTime })
             }
 
             context.commit("setWhereAmI", tvidx)
+            context.commit("updateMode", tvidx)
         },
 
         unmarkWatched(context, { tvid: tvid, season_number: season_number, episode_number: episode_number }) {
@@ -355,13 +311,14 @@ const store = new Vuex.Store({
             context.commit("unmarkSeason", { tvidx, seasonidx })
             context.commit("unmarkTV", { tvidx })
 
-            context.commit("setWhereAmI")
+            context.commit("setWhereAmI", tvidx)
+            context.commit("updateMode", tvidx)
         }
 
 
     },
 
-    plugins: [createPersistedState()]
+    plugins: [new VuexPersistence({ storage: localforage, asyncStorage: true }).plugin]
 });
 export default store
 

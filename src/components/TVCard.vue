@@ -49,14 +49,34 @@
               </el-col>
             </el-row>
             <el-row type="flex">
-              <el-image
-                :src="genUrl(tv.networks[0].logo_path)"
-                style="width: 48px; height: 16px"
-                fit="scale-down"
-              />
-              <span>{{ tv.networks[0].name }}</span>
-              <el-divider direction="vertical"></el-divider>
-              <span>{{ tv.status }}</span>
+              <el-col :span="18">
+                <el-image
+                  :src="genUrl(tv.networks[0].logo_path)"
+                  style="width: 48px; height: 16px; padding-right: 5px"
+                  fit="scale-down"
+                />
+                <!-- <span>{{ tv.networks[0].name }}</span> -->
+                <el-divider direction="vertical"></el-divider>
+                <span>{{ tv.status }}</span>
+              </el-col>
+              <el-col :span="6" style="text-align: right; padding-right: 20px">
+                <span>{{ next.word }}</span>
+                <el-divider direction="vertical"></el-divider>
+                <el-button
+                  icon="el-icon-check"
+                  :type="''"
+                  circle
+                  style="padding: 5px"
+                  v-if="next.episode"
+                  @click="
+                    markWatched(
+                      next.episode.season_number,
+                      next.episode.episode_number,
+                      false
+                    )
+                  "
+                />
+              </el-col>
             </el-row>
             <el-row class="progress">
               <el-progress
@@ -148,9 +168,9 @@
 }
 
 .progress {
-  padding-top: 33px;
+  padding-top: 25px;
   padding-bottom: 33px;
-  height: 93px;
+  height: 75px;
   padding-right: 20px;
 }
 
@@ -166,7 +186,7 @@ import SeasonTabs from "./SeasonTabs.vue";
 export default {
   name: "TVCard",
   props: {
-    tvidx: Number,
+    tvid: Number,
   },
   components: {
     SeasonTabs,
@@ -182,17 +202,28 @@ export default {
     };
   },
   computed: {
+    tvidx() {
+      return this.$store.getters.getTVIdxByID(this.tvid);
+    },
     tv() {
       return this.$store.getters.getTVByIdx(this.tvidx);
     },
-    tvid() {
-      return this.tv.id;
-    },
     percentage(total, watched) {
-      total =
-        this.tv.number_of_episodes -
-        (this.tv.seasons.slice(-1)[0].episode_count -
-          this.tv.last_episode_to_air.episode_number);
+      total = this.tv.seasons
+        .filter(
+          (season) =>
+            season.season_number !== 0 && new Date(season.air_date) < new Date()
+        )
+        .reduce(
+          (acc, season) =>
+            acc +
+            season.episodes.filter(
+              (episode) =>
+                new Date(episode.air_date ? episode.air_date : "2099-12-31") <
+                new Date()
+            ).length,
+          0
+        );
 
       watched =
         this.tv.seasons
@@ -206,16 +237,89 @@ export default {
               season.episodes.filter((episode) => episode.isFinished).length,
             0
           );
-      console.log(
-        "total,watched",
-        parseFloat(((watched / total) * 100).toFixed(2))
-      );
-      return parseFloat(((watched / total) * 100).toFixed(2));
+      return total !== 0 ? parseFloat(((watched / total) * 100).toFixed(2)) : 0;
+    },
+
+    next() {
+      this.$store.dispatch("updateTV", this.tvidx);
+      if (this.tv.mode == "finished") {
+        return { word: "You are finished", episode: null };
+      } else if (this.tv.mode == "following" || this.tv.mode == "upcoming") {
+        if (
+          this.tv.next_episode_to_air &&
+          this.tv.next_episode_to_air.air_date
+        ) {
+          return {
+            word: `Next episode in ${
+              this.tv.next_episode_to_air.air_date
+            } (${Math.round(
+              (new Date(this.tv.next_episode_to_air.air_date).getTime() -
+                new Date().getTime()) /
+                86400000
+            )} Days)`,
+            episode: null,
+          };
+        } else {
+          return { word: `Next episode TBD`, episode: null };
+        }
+      } else if (this.tv.mode == "notstart") {
+        return {
+          word: `Start Watch S01E01`,
+          episode: this.tv.seasons
+            .find((season) => season.season_number == 1)
+            .episodes.find((episode) => episode.episode_number == 1),
+        };
+      } else {
+        if (
+          this.tv.where_am_i.episode_number ==
+          this.tv.seasons.find(
+            (season) => season.season_number == this.tv.where_am_i.season_number
+          ).episode_count
+        ) {
+          return {
+            word: `Watch Next S${this.tv.where_am_i.season_number + 1}E01`,
+            episode: this.tv.seasons.find(
+              (season) =>
+                season.season_number == this.tv.where_am_i.season_number + 1
+            ).episodes[0],
+          };
+        } else {
+          return {
+            word: `Watch Next S${this.tv.where_am_i.season_number}E${
+              this.tv.where_am_i.episode_number < 100
+                ? ("0" + (this.tv.where_am_i.episode_number + 1)).slice(-2)
+                : this.tv.where_am_i.episode_number + 1
+            }`,
+            episode: this.tv.seasons
+              .find(
+                (season) =>
+                  season.season_number == this.tv.where_am_i.season_number
+              )
+              .episodes.find(
+                (episode) =>
+                  episode.episode_number ==
+                  this.tv.where_am_i.episode_number + 1
+              ),
+          };
+        }
+      }
+      // return { word: "unexpacted", epsiode: null };
     },
   },
   methods: {
     genUrl(path) {
       return `https://image.tmdb.org/t/p/original${path}`;
+    },
+    markWatched(season_number, episode_number, isAll) {
+      console.log("next", this.next, this.tv.where_am_i);
+      this.$store.dispatch("markWatched", {
+        isAll: isAll,
+        info: {
+          tvid: this.tvid,
+          season_number: season_number,
+          episode_number: episode_number,
+        },
+      });
     },
   },
   mounted() {

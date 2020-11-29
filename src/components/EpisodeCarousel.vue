@@ -39,15 +39,29 @@
             <el-divider direction="vertical" class="title-divider"></el-divider>
           </el-row>
           <el-row style="padding: 5px 0">
-            <span>{{ episode.name }}</span>
+            <span
+              style="
+                display: inline-block;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                heigt: 16px;
+                width: 420px;
+              "
+              >{{ episode.name }}</span
+            >
             <el-divider direction="vertical" class="title-divider"></el-divider>
             <i class="el-icon-date" style="margin-right: 5px" />
-            <span>{{ episode.air_date.slice(0, 10) }}</span>
+            <span>{{
+              episode.air_date
+                ? episode.air_date.slice(0, 10)
+                : "No air day yet"
+            }}</span>
           </el-row>
           <el-row class="episode-overview">
             <span style="visibility: visible">{{ episode.overview }}</span>
           </el-row>
-          <el-row class="mark-button">
+          <el-row class="mark-button" v-if="dateCompare(episode.air_date)">
             <el-col :span="22" style="line-height: 40px; padding-right: 10px"
               ><span v-if="episode.isFinished"
                 >Watched on {{ episode.finishedDate.slice(0, 10) }}</span
@@ -139,12 +153,12 @@ export default {
     };
   },
   created() {
-    let last = this.season.episodes.filter(
-      (episode) => episode.isFinished === true
-    );
-    console.log(last);
-    this.slide = last.length > 0 ? last.slice(-1)[0].episode_number : 0;
-    console.log("I am created slide", this.slide);
+    // let last = this.season.confidentEpisode;
+    console.log("confident", this.season.confidentEpisode);
+    this.slide =
+      this.season.confidentEpisode == -1
+        ? this.season.episode_count
+        : this.season.confidentEpisode + 1;
   },
   computed: {
     isAllable() {
@@ -180,8 +194,7 @@ export default {
       });
     },
     unmarkWatched(season_number, episode_number) {
-      console.log(season_number, episode_number);
-      this.$store.commit("unmarkWatched", {
+      this.$store.dispatch("unmarkWatched", {
         tvid: this.tvid,
         season_number: season_number,
         episode_number: episode_number,
@@ -197,6 +210,10 @@ export default {
     changeSlide(index) {
       this.slide = index + 1;
       console.log("Carousel change", this.slide);
+    },
+
+    dateCompare(date) {
+      return new Date(date) < new Date();
     },
   },
 };

@@ -15,7 +15,7 @@
           </el-col>
         </el-row>
       </el-header>
-      <el-container>
+      <el-container style="overflow-y: hidden !important">
         <el-aside width="200px"><NavMenu @setMenu="mode = $event" /></el-aside>
         <el-main>
           <!-- <TVCard
@@ -51,6 +51,9 @@ export default {
 </script>
 
 <style>
+::-webkit-scrollbar {
+  display: none;
+}
 #app {
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -65,10 +68,12 @@ export default {
 }
 
 .el-aside {
-  background-color: #ffb2dd;
+  /* background-color: #ffb2dd; */
   color: #333;
   text-align: center;
   line-height: 200px;
+  height: auto;
+  border-right: solid 1px #e6e6e6;
 }
 
 .el-main {
@@ -78,9 +83,6 @@ export default {
   padding: 0px !important;
 }
 
-.el-container {
-  margin-bottom: 40px;
-}
 .row-bg-header {
   margin-top: 20px;
   margin-bottom: 20px;
