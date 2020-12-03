@@ -5,7 +5,7 @@
     height="100vh"
     v-el-table-infinite-scroll="load"
     :infinite-scroll-immediate="false"
-    style="display: block"
+    style="display: block; scroll-behavior: smooth !important"
   >
     <el-table-column label="name">
       <template slot-scope="scope">
@@ -27,11 +27,12 @@ export default {
   data() {
     return {
       loader: 4,
-      loadList: this.$store.getters.getTVsByMode(this.mode).slice(0, 5),
     };
   },
   props: {
     mode: String,
+    search: String,
+    order: Function,
   },
   directives: {
     "el-table-infinite-scroll": elTableInfiniteScroll,
@@ -39,12 +40,16 @@ export default {
   methods: {
     load() {
       this.loader += 2;
-      console.log("loader", this.loader);
+      // console.log("loader", this.loader);
     },
   },
   computed: {
     tvs() {
-      return this.$store.getters.getTVsByMode(this.mode).slice(0, this.loader);
+      return this.$store.getters
+        .getTVsByMode(this.mode)
+        .filter((tv) => tv.name.includes(this.search))
+        .sort(this.order)
+        .slice(0, this.loader);
     },
   },
 };

@@ -33,7 +33,7 @@ export default {
 
   created() {
     // this.seasons = this.$store.getters.getTVByID(this.tvid).seasons;
-    console.log(this.$store.getters.getTVByID(this.tvid).where_am_i);
+    // console.log(this.$store.getters.getTVByID(this.tvid).where_am_i);
     this.activeName = this.seasons.find(
       (season) =>
         season.season_number ===

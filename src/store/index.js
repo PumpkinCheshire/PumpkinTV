@@ -25,7 +25,7 @@ const store = new Vuex.Store({
 
         getTVIdxByID: (state) => {
             return (tvid) => {
-                console.log("Getting tvidx by ID", tvid)
+                // console.log("Getting tvidx by ID", tvid)
                 return state.userData.tvs.findIndex(tv => tv.id === tvid)
             }
         },
@@ -116,7 +116,7 @@ const store = new Vuex.Store({
 
     mutations: {
         addTV(state, newTV) {
-            console.log(newTV)
+            // console.log(newTV)
             state.userData.tvs.unshift(newTV)
         },
         loadUserData(state, newUserData) {
@@ -161,14 +161,14 @@ const store = new Vuex.Store({
 
         setWhereAmI(state, tvidx) {
             try {
-                console.log("setting where am i")
+                // console.log("setting where am i")
                 state.userData.tvs[tvidx].where_am_i = state.userData.tvs[tvidx].seasons.filter(season => season.season_number > 0 && season.episodes.some(episode => episode.isFinished == true)).slice(-1)[0].episodes.filter(episode => episode.isFinished == true).slice(-1)[0]
                 // console.log(state.userData.tvs[tvidx].where_am_i)
             }
             catch {
-                console.log("error setting where am i, catching", state.userData)
+                // console.log("error setting where am i, catching", state.userData)
                 state.userData.tvs[tvidx].where_am_i = state.userData.tvs[tvidx].seasons.find(season => season.season_number === 1).episodes.find(episode => episode.episode_number === 1)
-                console.log('setting where am i to S01E01')
+                // console.log('setting where am i to S01E01')
             }
 
         },
@@ -197,6 +197,14 @@ const store = new Vuex.Store({
                 state.userData.tvs[tvidx].mode = "waiting"
             }
 
+        },
+
+        deleteTV(state, tvidx) {
+            state.userData.tvs.splice(tvidx, 1)
+        },
+
+        setProgress(state, { tvidx: tvidx, percentage: percentage }) {
+            state.userData.tvs[tvidx].progress = percentage
         }
     },
 
@@ -204,10 +212,10 @@ const store = new Vuex.Store({
         async addTV(context, tvid) {
             // const bent = require("bent")
             const genUpdater = require("../shared/shared.js").default.genUpdater
-            console.log(genUpdater)
+            // console.log(genUpdater)
             var addable = context.getters.isAddable(tvid)
             if (addable === false) {
-                console.log("Nothing to update or add")
+                // console.log("Nothing to update or add")
             } else {
                 var updater = await genUpdater(tvid)
                 if (addable === true) {
@@ -268,7 +276,7 @@ const store = new Vuex.Store({
 
             if (isAll) {
                 if (season_number > 1) {
-                    console.log("running previous episodes");
+                    // console.log("running previous episodes");
                     for (var i = 0; i < seasonidx; i++) {
                         let season = context.getters.getSeasonByIdx(tvidx, i)
                         if (season.season_number !== 0 && season.isFinished !== true) {
@@ -313,6 +321,18 @@ const store = new Vuex.Store({
 
             context.commit("setWhereAmI", tvidx)
             context.commit("updateMode", tvidx)
+        },
+
+        deleteTV(context, tvid) {
+            // console.log("store delete tv", tvid)
+            let tvidx = context.getters.getTVIdxByID(tvid)
+            // console.log("deleted tv", context.getters.getTVByID(tvid))
+            context.commit("deleteTV", tvidx)
+        },
+
+        setProgress(context, { tvid: tvid, percentage: percentage }) {
+            let tvidx = context.getters.getTVIdxByID(tvid)
+            context.commit("setProgress", { tvidx, percentage })
         }
 
 

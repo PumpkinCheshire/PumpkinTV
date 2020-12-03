@@ -154,7 +154,7 @@ export default {
   },
   created() {
     // let last = this.season.confidentEpisode;
-    console.log("confident", this.season.confidentEpisode);
+    // console.log("confident", this.season.confidentEpisode);
     this.slide =
       this.season.confidentEpisode == -1
         ? this.season.episode_count
@@ -202,14 +202,14 @@ export default {
     },
 
     changeCarousel(index) {
-      console.log(this.$refs);
+      // console.log(this.$refs);
       this.$refs.carousel.setActiveItem(index - 1);
-      console.log("Slider change", this.slide);
+      // console.log("Slider change", this.slide);
     },
 
     changeSlide(index) {
       this.slide = index + 1;
-      console.log("Carousel change", this.slide);
+      // console.log("Carousel change", this.slide);
     },
 
     dateCompare(date) {

@@ -7,7 +7,7 @@ async function genUpdater(tvid) {
     let tv = await getJson(
         `https://api.themoviedb.org/3/tv/${tvid}?api_key=${api}&language=en-US`
     )
-    console.log(tv)
+    // console.log(tv)
 
     // try {
     //     tv.first_air_date = new Date(tv.first_air_date)
@@ -34,7 +34,7 @@ async function genUpdater(tvid) {
             // season.air_date = new Date(season.air_date)
         }
         catch {
-            console.log("no season air date")
+            // console.log("no season air date")
         }
         await Promise.all(season.episodes.map(episode => {
             delete episode.crew
@@ -55,10 +55,10 @@ async function genUpdater(tvid) {
 
     }))
 
-    console.log("check patch")
+    // console.log("check patch")
     try {
         if (tv.seasons.find(season => season.season_number > 1).episodes[0].episode_number !== 1) {
-            console.log("patch")
+            // console.log("patch")
             await Promise.all(tv.seasons.filter(season => season.season_number > 1).map((season) => {
                 season.episodes.map(episode => {
                     episode.season_number = 1
@@ -72,7 +72,7 @@ async function genUpdater(tvid) {
         }
     }
     catch {
-        console.log("no patch")
+        // console.log("no patch")
     }
 
 

@@ -9,9 +9,11 @@
           justify="space-between"
         >
           <el-col :span="4"> Logo </el-col>
-          <el-col :span="12"> Search Bar </el-col>
+          <el-col :span="12">
+            <SearchBar @setSearch="search = $event"
+          /></el-col>
           <el-col :span="8" class="function-bar">
-            <FunctionBar />
+            <FunctionBar @setOrder="order = $event" />
           </el-col>
         </el-row>
       </el-header>
@@ -23,7 +25,12 @@
             v-bind:key="index"
             :tvid="item.id"
           /> -->
-          <CardTable v-bind:mode="mode" />
+          <CardTable
+            v-bind:mode="mode"
+            v-bind:search="search"
+            v-bind:order="order"
+          />
+          <!-- <el-backtop target=".cardTable" :visibility-height="0"></el-backtop> -->
         </el-main>
       </el-container>
     </el-container>
@@ -34,6 +41,7 @@
 import CardTable from "./components/CardTable.vue";
 import FunctionBar from "./components/FunctionBar.vue";
 import NavMenu from "./components/NavMenu.vue";
+import SearchBar from "./components/SearchBar.vue";
 
 export default {
   name: "app",
@@ -41,24 +49,29 @@ export default {
     CardTable,
     FunctionBar,
     NavMenu,
+    SearchBar,
   },
   data() {
     return {
       mode: "catching",
+      search: "",
+      order: undefined,
     };
   },
 };
 </script>
 
 <style>
-::-webkit-scrollbar {
+/* ::-webkit-scrollbar {
   display: none;
-}
+} */
 #app {
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
+  overflow: hidden;
+  scroll-behavior: smooth;
 }
 
 .el-header,
@@ -91,4 +104,8 @@ export default {
 .function-bar {
   text-align: center;
 }
+
+/* .cardTable {
+  height: 100vh;
+} */
 </style>

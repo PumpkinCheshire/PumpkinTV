@@ -51,7 +51,11 @@
             <el-row type="flex">
               <el-col :span="18">
                 <el-image
-                  :src="genUrl(tv.networks[0].logo_path)"
+                  :src="
+                    tv.networks.length > 0
+                      ? genUrl(tv.networks[0].logo_path)
+                      : ''
+                  "
                   style="width: 48px; height: 16px; padding-right: 5px"
                   fit="scale-down"
                 />
@@ -60,6 +64,21 @@
                 <span>{{ tv.status }}</span>
               </el-col>
               <el-col :span="6" style="text-align: right; padding-right: 20px">
+                <el-popconfirm
+                  title="Confirm to delete?"
+                  confirm-button-text="Yes"
+                  cancel-button-text="Cancel"
+                  @confirm="deleteTV"
+                >
+                  <el-button
+                    slot="reference"
+                    type="danger"
+                    icon="el-icon-delete"
+                    style="padding: 5px"
+                    circle
+                  ></el-button>
+                </el-popconfirm>
+                <el-divider direction="vertical"></el-divider>
                 <span>{{ next.word }}</span>
                 <el-divider direction="vertical"></el-divider>
                 <el-button
@@ -237,6 +256,11 @@ export default {
               season.episodes.filter((episode) => episode.isFinished).length,
             0
           );
+      this.$store.dispatch("setProgress", {
+        tvid: this.tv.id,
+        percentage:
+          total !== 0 ? parseFloat(((watched / total) * 100).toFixed(2)) : 0,
+      });
       return total !== 0 ? parseFloat(((watched / total) * 100).toFixed(2)) : 0;
     },
 
@@ -311,7 +335,7 @@ export default {
       return `https://image.tmdb.org/t/p/original${path}`;
     },
     markWatched(season_number, episode_number, isAll) {
-      console.log("next", this.next, this.tv.where_am_i);
+      // console.log("next", this.next, this.tv.where_am_i);
       this.$store.dispatch("markWatched", {
         isAll: isAll,
         info: {
@@ -320,6 +344,10 @@ export default {
           episode_number: episode_number,
         },
       });
+    },
+    deleteTV() {
+      // console.log("delete tv", this.tvid);
+      this.$store.dispatch("deleteTV", this.tvid);
     },
   },
   mounted() {
