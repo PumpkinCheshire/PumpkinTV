@@ -213,7 +213,7 @@ export default {
     },
 
     dateCompare(date) {
-      return new Date(date) < new Date();
+      return new Date(date).getTime() < new Date().getTime();
     },
   },
 };

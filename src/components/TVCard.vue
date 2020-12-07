@@ -22,7 +22,9 @@
               <el-image
                 key="poster"
                 style="width: 100%; height: 100%"
-                :src="genUrl(season_poster)"
+                :src="
+                  season_poster ? genUrl(season_poster) : genUrl(tv.poster_path)
+                "
                 v-else
               />
             </transition>
@@ -118,86 +120,6 @@
   </el-row>
 </template>
 
-<style>
-.backdrop_col {
-  width: 300px !important;
-  height: 169px !important;
-}
-
-.backdrop_col_expand {
-  width: 300px !important;
-  height: 450px !important;
-}
-
-.fade-enter-active {
-  transition: opacity 1s;
-}
-
-.fade-leave-active {
-  transition: opacity 0s;
-}
-
-.fade-enter {
-  opacity: 0 !important;
-}
-
-.fade-leave-to {
-  opacity: 0;
-}
-
-.title_col {
-  width: calc(100% - 300px) !important;
-  height: 169px !important;
-}
-
-.el-card {
-  border-radius: 15px !important;
-}
-
-.poster {
-  height: 100%;
-  display: block;
-  float: left;
-}
-
-.show_title {
-  height: 40px;
-  font-size: 32px;
-  text-align: left;
-  margin-top: 10px;
-  margin-bottom: 10px;
-}
-
-.show_rate {
-  min-width: 380px !important;
-  font-size: 32px;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  text-align: right !important;
-  padding-left: 20px;
-  padding-right: 20px;
-}
-
-.el-rate__icon {
-  font-size: 24px !important;
-}
-
-.el-rate__text {
-  font-size: 24px !important;
-}
-
-.progress {
-  padding-top: 25px;
-  padding-bottom: 33px;
-  height: 75px;
-  padding-right: 20px;
-}
-
-.season_tab {
-  margin-bottom: 10px;
-  margin-right: 20px;
-}
-</style>
 
 <script>
 import SeasonTabs from "./SeasonTabs.vue";
@@ -355,3 +277,89 @@ export default {
   },
 };
 </script>
+
+<style>
+.backdrop_col {
+  width: 300px !important;
+  height: 169px !important;
+}
+
+.backdrop_col_expand {
+  width: 300px !important;
+  height: 450px !important;
+}
+
+.fade-enter-active {
+  transition: opacity 1s;
+}
+
+.fade-leave-active {
+  transition: opacity 0s;
+}
+
+.fade-enter {
+  opacity: 0 !important;
+}
+
+.fade-leave-to {
+  opacity: 0;
+}
+
+.title_col {
+  width: calc(100% - 300px) !important;
+  height: 169px !important;
+}
+
+.el-card {
+  border-radius: 15px !important;
+}
+
+.poster {
+  height: 100%;
+  display: block;
+  float: left;
+}
+
+.show_title {
+  font-family: "Source Sans Pro", sans-serif !important;
+  height: 40px;
+  font-weight: bold;
+  font-size: 32px;
+  text-align: left;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.show_rate {
+  min-width: 380px !important;
+  font-size: 32px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  text-align: right !important;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.el-rate__icon {
+  font-size: 24px !important;
+}
+
+.el-rate__text {
+  font-size: 24px !important;
+}
+
+.progress {
+  padding-top: 25px;
+  padding-bottom: 33px;
+  height: 75px;
+  padding-right: 20px;
+}
+
+.season_tab {
+  margin-bottom: 10px;
+  margin-right: 20px;
+}
+</style>

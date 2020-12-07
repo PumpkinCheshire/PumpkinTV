@@ -2,6 +2,13 @@
   <div id="app">
     <el-container>
       <el-header>
+        <el-switch
+          v-model="tmode"
+          @change="changeMode"
+          active-color="#13ce66"
+          inactive-color="#ff4949"
+        >
+        </el-switch>
         <el-row
           :gutter="20"
           type="flex"
@@ -13,24 +20,17 @@
             <SearchBar @setSearch="search = $event"
           /></el-col>
           <el-col :span="8" class="function-bar">
-            <FunctionBar @setOrder="order = $event" />
+            <FunctionBar />
           </el-col>
         </el-row>
       </el-header>
       <el-container style="overflow-y: hidden !important">
-        <el-aside width="200px"><NavMenu @setMenu="mode = $event" /></el-aside>
+        <el-aside width="200px"
+          ><NavMenu v-if="tmode" /><NavMenuMV v-else
+        /></el-aside>
         <el-main>
-          <!-- <TVCard
-            v-for="(item, index) in items"
-            v-bind:key="index"
-            :tvid="item.id"
-          /> -->
-          <CardTable
-            v-bind:mode="mode"
-            v-bind:search="search"
-            v-bind:order="order"
-          />
-          <!-- <el-backtop target=".cardTable" :visibility-height="0"></el-backtop> -->
+          <CardTable v-if="tmode" />
+          <MovieTable v-else />
         </el-main>
       </el-container>
     </el-container>
@@ -41,32 +41,40 @@
 import CardTable from "./components/CardTable.vue";
 import FunctionBar from "./components/FunctionBar.vue";
 import NavMenu from "./components/NavMenu.vue";
+import NavMenuMV from "./components/NavMenuMV.vue";
 import SearchBar from "./components/SearchBar.vue";
-
+import MovieTable from "./components/MovieTable.vue";
 export default {
   name: "app",
   components: {
     CardTable,
     FunctionBar,
     NavMenu,
+    NavMenuMV,
     SearchBar,
+    MovieTable,
   },
-  data() {
-    return {
-      mode: "catching",
-      search: "",
-      order: undefined,
-    };
+
+  computed: {
+    tmode() {
+      return this.$store.getters.getMode;
+    },
+  },
+  methods: {
+    changeMode() {
+      this.$store.commit("changeMode");
+    },
   },
 };
 </script>
 
 <style>
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap");
 /* ::-webkit-scrollbar {
   display: none;
 } */
 #app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
+  font-family: "Source Sans Pro", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;

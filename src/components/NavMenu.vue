@@ -67,7 +67,7 @@ export default {
           mode = "stopped";
           break;
       }
-      this.$emit("setMenu", mode);
+      this.$store.commit("setTVMode", mode);
     },
   },
 };

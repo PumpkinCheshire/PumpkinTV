@@ -29,11 +29,6 @@ export default {
       loader: 4,
     };
   },
-  props: {
-    mode: String,
-    search: String,
-    order: Function,
-  },
   directives: {
     "el-table-infinite-scroll": elTableInfiniteScroll,
   },
@@ -44,11 +39,64 @@ export default {
     },
   },
   computed: {
+    mode() {
+      return this.$store.getters.getTVMode;
+    },
+    search() {
+      return this.$store.getters.getTVSearch;
+    },
+    sort() {
+      let sortMethods = {
+        NS: undefined,
+        AZ: (a, b) => (a.name > b.name ? 1 : b.name > a.name ? -1 : 0),
+        ZA: (a, b) => (a.name < b.name ? 1 : b.name < a.name ? -1 : 0),
+        LH: (a, b) => a.progress - b.progress,
+        HL: (a, b) => b.progress - a.progress,
+        NO: (a, b) => {
+          if (a.next_episode_to_air != null && b.next_episode_to_air != null) {
+            return (
+              new Date(a.next_episode_to_air.air_date).getTime() -
+              new Date(b.next_episode_to_air.air_date).getTime()
+            );
+          } else if (
+            a.next_episode_to_air == null &&
+            b.next_episode_to_air == null
+          ) {
+            return 0;
+          } else if (a.next_episode_to_air == null) {
+            return 1;
+          } else if (b.next_episode_to_air == null) {
+            return -1;
+          }
+        },
+        ON: (a, b) => {
+          if (a.next_episode_to_air != null && b.next_episode_to_air != null) {
+            return (
+              new Date(b.next_episode_to_air.air_date).getTime() -
+              new Date(a.next_episode_to_air.air_date).getTime()
+            );
+          } else if (
+            a.next_episode_to_air == null &&
+            b.next_episode_to_air == null
+          ) {
+            return 0;
+          } else if (a.next_episode_to_air == null) {
+            return 1;
+          } else if (b.next_episode_to_air == null) {
+            return -1;
+          }
+        },
+      };
+      console.log("sort param", this.$store.getters.getTVSort);
+      return sortMethods[this.$store.getters.getTVSort];
+    },
     tvs() {
       return this.$store.getters
         .getTVsByMode(this.mode)
-        .filter((tv) => tv.name.includes(this.search))
-        .sort(this.order)
+        .filter((tv) =>
+          tv.name.toLowerCase().includes(this.search.toLowerCase())
+        )
+        .sort(this.sort)
         .slice(0, this.loader);
     },
   },
