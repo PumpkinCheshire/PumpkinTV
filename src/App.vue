@@ -9,6 +9,7 @@
           inactive-color="#ff4949"
         >
         </el-switch>
+
         <el-row
           :gutter="20"
           type="flex"
