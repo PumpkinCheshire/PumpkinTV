@@ -15,7 +15,6 @@
           class="row-bg-header"
           justify="space-between"
         >
-          <el-col :span="4"> Logo </el-col>
           <el-col :span="12">
             <SearchBar @setSearch="search = $event"
           /></el-col>
