@@ -26,11 +26,11 @@
       </el-header>
       <el-container style="overflow-y: hidden !important">
         <el-aside width="200px"
-          ><NavMenu v-if="tmode" /><NavMenuMV v-else
+          ><TVNavMenu v-if="tmode" /><MVNavMenu v-else
         /></el-aside>
         <el-main>
-          <CardTable v-if="tmode" />
-          <MovieTable v-else />
+          <TVTable v-if="tmode" />
+          <MVTable v-else />
         </el-main>
       </el-container>
     </el-container>
@@ -38,21 +38,22 @@
 </template>
 
 <script>
-import CardTable from "./components/CardTable.vue";
+import TVTable from "./components/TV/TVTable.vue";
+import MVTable from "./components/MV/MVTable.vue";
 import FunctionBar from "./components/FunctionBar.vue";
-import NavMenu from "./components/NavMenu.vue";
-import NavMenuMV from "./components/NavMenuMV.vue";
+import TVNavMenu from "./components/TV/TVNavMenu.vue";
+import MVNavMenu from "./components/MV/MVNavMenu.vue";
 import SearchBar from "./components/SearchBar.vue";
-import MovieTable from "./components/MovieTable.vue";
+
 export default {
   name: "app",
   components: {
-    CardTable,
+    TVTable,
+    MVTable,
     FunctionBar,
-    NavMenu,
-    NavMenuMV,
+    TVNavMenu,
+    MVNavMenu,
     SearchBar,
-    MovieTable,
   },
 
   computed: {

@@ -75,8 +75,27 @@ const store = new Vuex.Store({
             }
         },
 
-        getTotalWatched: (state) => {
+        getTotalWatchedTV: (state) => {
             return state.userData.tvs.reduce((acc, tv) => acc + (tv.isFinished ? tv.number_of_episodes : (tv.seasons.reduce((acc, season) => acc + (season.isFinished ? season.episode_count : season.episodes.filter(episode => episode.isFinished).length), 0))), 0)
+        },
+
+        getTotalWatchedMV: (state) => {
+            return state.userData.mvs.reduce((acc, mv) => acc + (mv.isFinished ? 1 : 0), 0)
+        },
+
+        getMVWatchedTime: (state) => {
+            let totalTime = state.userData.mvs.reduce((acc, mv) => acc + (mv.isFinished ? mv.runtime : 0), 0)
+            let month = Math.floor(totalTime / 43200)
+            totalTime -= month * 43200
+            let day = Math.floor(totalTime / 1440)
+            totalTime -= day * 1440
+            let hour = Math.floor(totalTime / 60)
+
+            return [month, day, hour]
+        },
+
+        getTVWatchedTime: () => {
+            return [0, 0, 0]
         },
 
         getTVIdxByID: (state) => {

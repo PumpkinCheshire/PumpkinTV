@@ -18,10 +18,10 @@
 </template>
 
 <script>
-import AddTV from "./AddTV.vue";
-import AddMV from "./AddMV.vue";
-import SortTV from "./SortTV.vue";
-import SortMV from "./SortMV.vue";
+import AddTV from "./TV/AddTV.vue";
+import AddMV from "./MV/AddMV.vue";
+import SortTV from "./TV/SortTV.vue";
+import SortMV from "./MV/SortMV.vue";
 import BackupRecover from "./BackupRecover.vue";
 import StatDrawer from "./StatDrawer.vue";
 
