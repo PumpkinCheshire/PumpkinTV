@@ -1,7 +1,7 @@
 <template>
   <el-dropdown @command="handleCommand">
     <el-button type="primary" round>
-      Backup & Recovery<i class="el-icon-arrow-down el-icon--right"></i>
+      B & R<i class="el-icon-arrow-down el-icon--right"></i>
     </el-button>
     <el-dropdown-menu slot="dropdown">
       <el-dropdown-item command="dl">Download Backup</el-dropdown-item>

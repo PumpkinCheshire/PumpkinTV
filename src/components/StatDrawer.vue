@@ -79,7 +79,7 @@
 </template>
 
 <script>
-import "echarts/echarts.all";
+import "echarts/lib/chart/pie";
 
 export default {
   name: "StatDrawer",
@@ -219,8 +219,8 @@ export default {
 
 <style>
 .avatar-bar {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   border: 2px solid #f06292;
 }

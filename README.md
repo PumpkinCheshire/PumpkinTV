@@ -1,4 +1,4 @@
-# watched
+# PumpkinTV
 
 ## Project setup
 ```

@@ -1,17 +1,17 @@
 <template>
-  <el-row :gutter="20" class="function-bar">
-    <el-col :span="4">
+  <el-row :gutter="20" type="flex" justify="end">
+    <el-col :span="6">
       <AddTV v-if="$store.getters.getMode" />
       <AddMV v-else />
     </el-col>
     <el-col :span="8">
-      <BackupRecover />
+      <BackupRecover :span="5" />
     </el-col>
-    <el-col :span="4">
+    <el-col :span="7">
       <SortTV v-if="$store.getters.getMode" />
       <SortMV v-else />
     </el-col>
-    <el-col :span="4">
+    <el-col :span="3">
       <StatDrawer />
     </el-col>
   </el-row>
@@ -40,6 +40,6 @@ export default {
 
 <style>
 .function-bar {
-  text-align: right;
+  /* text-align: right; */
 }
 </style>

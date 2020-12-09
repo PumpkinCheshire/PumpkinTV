@@ -2,24 +2,27 @@
   <div id="app">
     <el-container>
       <el-header>
-        <el-switch
-          v-model="tmode"
-          @change="changeMode"
-          active-color="#13ce66"
-          inactive-color="#ff4949"
-        >
-        </el-switch>
-
         <el-row
           :gutter="20"
           type="flex"
           class="row-bg-header"
           justify="space-between"
         >
-          <el-col :span="12">
+          <el-col :span="4" style="height: 40px">
+            <el-switch
+              style="padding: 10px"
+              v-model="tmode"
+              @change="changeMode"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+            >
+            </el-switch>
+            <span class="logo"> Pumpkin {{ tmode ? "TV" : "Movie" }}</span>
+          </el-col>
+          <el-col :span="20">
             <SearchBar @setSearch="search = $event"
           /></el-col>
-          <el-col :span="8" class="function-bar">
+          <el-col :span="6" class="function-bar">
             <FunctionBar />
           </el-col>
         </el-row>
@@ -111,6 +114,13 @@ export default {
 }
 
 .function-bar {
+  text-align: center;
+}
+
+.logo {
+  padding: 10px;
+  font-weight: bold;
+  font-size: 20px;
   text-align: center;
 }
 
