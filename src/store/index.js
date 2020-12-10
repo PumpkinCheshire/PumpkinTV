@@ -474,7 +474,7 @@ const store = new Vuex.Store({
                 }
                 else {
                     const genUpdater = require("../shared/shared.js").default.genUpdater
-                    var updater = await genUpdater(tvid)
+                    updater = await genUpdater(tvid)
                     context.commit("updateTV", { updater, tvidx })
                 }
             }
