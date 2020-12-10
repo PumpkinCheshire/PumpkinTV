@@ -17,10 +17,10 @@ const store = new Vuex.Store({
             mvs: [],
         },
         mode: false,
-        tvSort: "none",
+        tvSort: "LE",
         tvSearch: "",
         tvMode: "catching",
-        mvSort: "none",
+        mvSort: "LE",
         mvSearch: "",
         mvMode: "listed"
 
@@ -224,6 +224,8 @@ const store = new Vuex.Store({
     mutations: {
         changeMode(state) {
             state.mode = !state.mode
+            state.tvSearch = ""
+            state.mvSearch = ""
         },
         addTV(state, newTV) {
 
@@ -297,26 +299,17 @@ const store = new Vuex.Store({
         },
 
         setWhereAmI(state, tvidx) {
-            try {
+            state.userData.tvs[tvidx].where_am_i = state.userData.tvs[tvidx].seasons.filter(season => season.season_number > 0 && season.episodes.some(episode => episode.isFinished == true)).slice(-1)[0].episodes.filter(episode => episode.isFinished == true).slice(-1)[0]
 
-                state.userData.tvs[tvidx].where_am_i = state.userData.tvs[tvidx].seasons.filter(season => season.season_number > 0 && season.episodes.some(episode => episode.isFinished == true)).slice(-1)[0].episodes.filter(episode => episode.isFinished == true).slice(-1)[0]
-
-
-            }
-            catch {
-
-
+            if (state.userData.tvs[tvidx].where_am_i == undefined) {
                 state.userData.tvs[tvidx].where_am_i = state.userData.tvs[tvidx].seasons.find(season => season.season_number === 1).episodes.find(episode => episode.episode_number === 1)
-
             }
-
         },
 
         updateMode(state, tvidx) {
             if (state.userData.tvs[tvidx].mode === "stopped") {
                 return
             }
-
             if (state.userData.tvs[tvidx].status === "In Production") {
                 state.userData.tvs[tvidx].mode = "upcoming"
             }
@@ -413,9 +406,8 @@ const store = new Vuex.Store({
 
                         }))
                     }))
-                    var where_am_i = await tv.seasons.find(season => season.season_number === 1).episodes.find(episode => episode.episode_number === 1)
 
-                    tv.where_am_i = where_am_i
+                    tv.where_am_i = await tv.seasons.find(season => season.season_number === 1).episodes.find(episode => episode.episode_number === 1)
 
                     context.commit("addTV", tv)
                 }

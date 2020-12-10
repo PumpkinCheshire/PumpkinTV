@@ -47,7 +47,9 @@ export default {
     },
     sort() {
       let sortMethods = {
-        NS: undefined,
+        LE: (a, b) =>
+          new Date(b.where_am_i.finishedDate).getTime() -
+          new Date(a.where_am_i.finishedDate).getTime(),
         AZ: (a, b) => (a.name > b.name ? 1 : b.name > a.name ? -1 : 0),
         ZA: (a, b) => (a.name < b.name ? 1 : b.name < a.name ? -1 : 0),
         LH: (a, b) => a.progress - b.progress,

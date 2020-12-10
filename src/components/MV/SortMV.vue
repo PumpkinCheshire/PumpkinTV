@@ -4,7 +4,7 @@
       Sort<i class="el-icon-arrow-down el-icon--right"></i>
     </el-button>
     <el-dropdown-menu slot="dropdown">
-      <el-dropdown-item command="NS">No Sort</el-dropdown-item>
+      <el-dropdown-item command="LE">Last Watch</el-dropdown-item>
       <el-dropdown-item command="AZ">Name A to Z</el-dropdown-item>
       <el-dropdown-item command="ZA">Name Z to A</el-dropdown-item>
       <el-dropdown-item command="NO">Release Date New to Old</el-dropdown-item>
