@@ -412,7 +412,7 @@ const store = new Vuex.Store({
                     context.commit("addTV", tv)
                 }
                 else {
-                    context.dispatch("updateTV", addable)
+                    context.dispatch("updateTV", { tvidx: addable, force: false })
                 }
             }
 
@@ -444,34 +444,40 @@ const store = new Vuex.Store({
 
         },
 
-        async updateTV(context, tvidx) {
+        async updateTV(context, { tvidx: tvidx, force: force }) {
             var tvid = context.getters.getTVIDByIdx(tvidx)
-            const bent = require("bent")
-            const getJson = bent("json")
-            let changeList = []
-            let page = 1
-            while (page) {
-                let change = await getJson(`https://api.themoviedb.org/3/tv/changes?api_key=${context.getters.getAPI}&page=${page}`)
-
-                if (change.results.length >= 100) {
-                    page++
-                    changeList.concat(change.results)
-                }
-                else {
-                    break;
-                }
-
-            }
-
-            if (!changeList.map(tv => tv.id).includes(tvid)) {
-                console.log("no change no update")
-            }
-            else {
+            if (force) {
                 const genUpdater = require("../shared/shared.js").default.genUpdater
                 var updater = await genUpdater(tvid)
                 context.commit("updateTV", { updater, tvidx })
             }
+            else {
+                const bent = require("bent")
+                const getJson = bent("json")
+                let changeList = []
+                let page = 1
+                while (page) {
+                    let change = await getJson(`https://api.themoviedb.org/3/tv/changes?api_key=${context.getters.getAPI}&page=${page}`)
 
+                    if (change.results.length >= 100) {
+                        page++
+                        changeList.concat(change.results)
+                    }
+                    else {
+                        break;
+                    }
+
+                }
+
+                if (!changeList.map(tv => tv.id).includes(tvid)) {
+                    console.log("no change no update")
+                }
+                else {
+                    const genUpdater = require("../shared/shared.js").default.genUpdater
+                    var updater = await genUpdater(tvid)
+                    context.commit("updateTV", { updater, tvidx })
+                }
+            }
             context.commit("updateMode", tvidx)
         },
 
@@ -510,7 +516,7 @@ const store = new Vuex.Store({
             var curTime = JSON.parse(JSON.stringify(new Date()))
 
             let tvidx = context.getters.getTVIdxByID(tvid)
-            context.dispatch("updateTV", tvidx)
+            context.dispatch("updateTV", { tvidx: tvidx, force: false })
             let tv = context.getters.getTVByID(tvid)
 
             let seasonidx = context.getters.getSeasonIdxByNumber(tvidx, season_number)

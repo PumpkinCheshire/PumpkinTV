@@ -66,6 +66,12 @@
                 <span>{{ tv.status }}</span>
               </el-col>
               <el-col :span="6" style="text-align: right; padding-right: 20px">
+                <el-button
+                  icon="el-icon-refresh"
+                  style="padding: 5px"
+                  circle
+                  @click="refresh"
+                ></el-button>
                 <el-popconfirm
                   title="Confirm to delete?"
                   confirm-button-text="Yes"
@@ -270,6 +276,10 @@ export default {
     deleteTV() {
       // console.log("delete tv", this.tvid);
       this.$store.dispatch("deleteTV", this.tvid);
+    },
+
+    refresh() {
+      this.$store.dispatch("updateTV", { tvidx: this.tvidx, force: false });
     },
   },
   mounted() {
