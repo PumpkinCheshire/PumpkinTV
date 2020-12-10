@@ -72,6 +72,7 @@
                   circle
                   @click="refresh"
                 ></el-button>
+                <el-divider direction="vertical"></el-divider>
                 <el-popconfirm
                   title="Confirm to delete?"
                   confirm-button-text="Yes"
@@ -279,7 +280,7 @@ export default {
     },
 
     refresh() {
-      this.$store.dispatch("updateTV", { tvidx: this.tvidx, force: false });
+      this.$store.dispatch("updateTV", { tvidx: this.tvidx, force: true });
     },
   },
   mounted() {
