@@ -19,6 +19,10 @@ export default {
       search: "",
     };
   },
+  mounted() {
+    this.$store.commit("setTVSearch", "");
+    this.$store.commit("setMVSearch", "");
+  },
   methods: {
     handleSearch() {
       this.$store.commit(

@@ -65,7 +65,7 @@
                 <el-divider direction="vertical"></el-divider>
                 <span>{{ tv.status }}</span>
               </el-col>
-              <el-col :span="6" style="text-align: right; padding-right: 20px">
+              <el-col :span="8" style="text-align: right; padding-right: 20px">
                 <el-button
                   icon="el-icon-refresh"
                   style="padding: 5px"
@@ -194,7 +194,7 @@ export default {
     },
 
     next() {
-      this.$store.dispatch("updateTV", this.tvidx);
+      // this.$store.dispatch("updateTV", {this.tvidx});
       if (this.tv.mode == "finished") {
         return { word: "You are finished", episode: null };
       } else if (this.tv.mode == "following" || this.tv.mode == "upcoming") {
@@ -284,7 +284,8 @@ export default {
     },
   },
   mounted() {
-    this.tvid = this.$store.getters.getTVByIdx(this.tvidx).id;
+    this.tvid = this.$store.getters.getTVIDByIdx(this.tvidx);
+    this.$store.dispatch("updateTV", { tvidx: this.tvidx, force: false });
   },
 };
 </script>

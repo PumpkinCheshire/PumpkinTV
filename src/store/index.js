@@ -445,6 +445,7 @@ const store = new Vuex.Store({
         },
 
         async updateTV(context, { tvidx: tvidx, force: force }) {
+            console.log("updatetv", tvidx)
             var tvid = context.getters.getTVIDByIdx(tvidx)
             if (force) {
                 const genUpdater = require("../shared/shared.js").default.genUpdater
@@ -516,6 +517,7 @@ const store = new Vuex.Store({
             var curTime = JSON.parse(JSON.stringify(new Date()))
 
             let tvidx = context.getters.getTVIdxByID(tvid)
+            console.log("markWatched", tvidx)
             context.dispatch("updateTV", { tvidx: tvidx, force: false })
             let tv = context.getters.getTVByID(tvid)
 
