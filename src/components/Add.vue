@@ -3,29 +3,23 @@
     <el-button type="primary" round @click="dialogFormVisible = true">
       Add
     </el-button>
-
-    <el-dialog title="Add a new TV show" :visible.sync="dialogFormVisible">
+    <el-dialog
+      :title="`Add a new ${tmode ? 'TV' : 'Movie'}`"
+      :visible.sync="dialogFormVisible"
+    >
       <el-form :model="form" label-width="100px" class="ruleForm">
-        <!-- <el-form-item label="API-KEY">
-          <el-input
-            placeholder="Your TMDB api-key"
-            v-model="form.api"
-            clearable
-          >
-          </el-input>
-        </el-form-item> -->
         <el-form-item label="Show Name">
           <el-autocomplete
             class="inline-input"
             v-model="form.name"
             :fetch-suggestions="querySearch"
-            placeholder="The TV show name"
+            placeholder="The Movie name"
             :trigger-on-focus="false"
             :debounce="900"
             @select="handleSelect"
           >
             <el-button type="text" disabled slot="append">
-              TMDB id : {{ tvid }}
+              TMDB id : {{ id }}
             </el-button>
 
             <template slot-scope="{ item }">
@@ -65,7 +59,7 @@ const bent = require("bent");
 const getJson = bent("json");
 
 export default {
-  name: "AddTV",
+  name: "AddMV",
 
   data() {
     return {
@@ -73,34 +67,39 @@ export default {
       form: {
         name: "",
       },
-      tvid: 0,
-      // userData: { api_key: "49ae83b320a43c660d6fa4b4dae9ea79", tvs: [] },
+      id: 0,
     };
   },
-  created() {},
   methods: {
     querySearch(queryString, cb) {
       var queryString_url = encodeURI(queryString);
-      console.log(queryString_url);
+
       (async () => {
         var obj = await getJson(
-          `https://api.themoviedb.org/3/search/tv?api_key=49ae83b320a43c660d6fa4b4dae9ea79&language=en-US&page=1&query=${queryString_url}&include_adult=false`
+          this.tmode
+            ? `https://api.themoviedb.org/3/search/tv?api_key=${this.$store.getters.getAPI}&language=en-US&page=1&query=${queryString_url}&include_adult=false`
+            : `https://api.themoviedb.org/3/search/movie?api_key=${this.$store.getters.getAPI}&language=en-US&page=1&query=${queryString_url}&include_adult=false`
         );
-        var results = obj.results.map((tv) => ({
-          value: tv.name,
-          id: tv.id,
-          date: tv.first_air_date,
-          backdrop_path: `https://image.tmdb.org/t/p/w200/${tv.backdrop_path}`,
+        var results = obj.results.map((v) => ({
+          value: this.tmode ? v.name : v.title,
+          id: v.id,
+          date: this.tmode ? v.first_air_date : v.release_date,
+          backdrop_path: `https://image.tmdb.org/t/p/w200/${v.backdrop_path}`,
         }));
         cb(results);
       })();
     },
     handleSelect(item) {
-      this.tvid = item.id;
+      this.id = item.id;
     },
     onSubmit() {
       this.dialogFormVisible = false;
-      this.$store.dispatch("addTV", this.tvid);
+      this.$store.dispatch(this.tmode ? "addTV" : "addMV", this.id);
+    },
+  },
+  computed: {
+    tmode() {
+      return this.$store.getters.getMode;
     },
   },
 };

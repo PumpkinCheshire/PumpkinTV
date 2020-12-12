@@ -24,7 +24,8 @@
         <el-col :span="18">
           <el-image
             :src="
-              mv.production_companies.length > 0
+              mv.production_companies.filter((comp) => comp.logo_path != null)
+                .length > 0
                 ? genUrl(
                     mv.production_companies
                       .filter((comp) => comp.logo_path != null)
@@ -64,9 +65,17 @@
 
       <el-row class="mark-button" v-if="dateCompare(mv.release_date)">
         <el-col :span="20" style="line-height: 40px; padding-right: 10px"
-          ><span v-if="mv.isFinished"
-            >Watched on {{ mv.finishedDate.slice(0, 10) }}</span
-          ><el-divider direction="vertical"></el-divider>
+          ><span v-if="mv.isFinished">Watched on </span>
+          <el-date-picker
+            v-model="finishedDate"
+            align="right"
+            type="date"
+            size="mini"
+            class="date-picker"
+            @change="changeFinishedDate"
+            :picker-options="pickerOptions"
+          >
+          </el-date-picker>
         </el-col>
         <el-col :span="2">
           <el-button
@@ -89,12 +98,53 @@ export default {
   },
   data() {
     return {
+      finishedDate: "",
       expand: false,
       backdrop_path:
         "https://image.tmdb.org/t/p/original/wzJRB4MKi3yK138bJyuL9nx47y6.jpg",
       poster_path:
         "https://image.tmdb.org/t/p/original/k68nPLbIST6NP96JmTxmZijEvCA.jpg",
+      pickerOptions: {
+        disabledDate(time) {
+          return time.getTime() > Date.now();
+        },
+        shortcuts: [
+          {
+            text: "Today",
+            onClick(picker) {
+              picker.$emit("pick", new Date());
+            },
+          },
+          {
+            text: "Yesterday",
+            onClick(picker) {
+              picker.$emit(
+                "pick",
+                new Date().setTime(new Date().getTime() - 3600 * 1000 * 24)
+              );
+            },
+          },
+          {
+            text: "Week Ago",
+            onClick(picker) {
+              picker.$emit(
+                "pick",
+                new Date().setTime(new Date().getTime() - 3600 * 1000 * 24 * 7)
+              );
+            },
+          },
+          {
+            text: "Released Date",
+            onClick: (picker) => {
+              picker.$emit("pick", this.mv.release_date);
+            },
+          },
+        ],
+      },
     };
+  },
+  mounted() {
+    this.finishedDate = this.mv.finishedDate;
   },
   computed: {
     mvidx() {
@@ -119,6 +169,13 @@ export default {
     },
     deleteMV() {
       this.$store.dispatch("deleteMV", this.mvid);
+    },
+    changeFinishedDate() {
+      console.log("onchange", this.finishedDate);
+      this.$store.dispatch("changeMVFinishedDate", {
+        mvidx: this.mvidx,
+        date: JSON.parse(JSON.stringify(this.finishedDate)),
+      });
     },
   },
 };
@@ -184,5 +241,9 @@ export default {
   -webkit-line-clamp: 7;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.date-picker {
+  width: 130px !important;
 }
 </style>

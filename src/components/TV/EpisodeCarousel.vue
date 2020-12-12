@@ -15,7 +15,7 @@
         :key="'carousel' + episode.id"
         style="background-color: grey; border-radius: 20px; border: transparent"
       >
-        <el-card
+        <!-- <el-card
           class="episode-card"
           v-bind:style="`background-image: -webkit-cross-fade(url(data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=),url(https://image.tmdb.org/t/p/original${
             episode.still_path ? episode.still_path : tv.backdrop_path
@@ -124,7 +124,13 @@
               />
             </el-col>
           </el-row>
-        </el-card>
+        </el-card> -->
+        <EpisodeCard
+          v-bind:episode="episode"
+          v-bind:slide="slide"
+          v-bind:tvid="tvid"
+          v-bind:season="season"
+        />
       </el-carousel-item>
     </el-carousel>
     <el-slider
@@ -141,11 +147,15 @@
 </template>
 
 <script>
+import EpisodeCard from "./EpisodeCard.vue";
 export default {
   name: "EpisodeCarousel",
   props: {
     season: Object,
     tvid: Number,
+  },
+  components: {
+    EpisodeCard,
   },
   data() {
     return {
@@ -161,45 +171,45 @@ export default {
         : this.season.confidentEpisode + 1;
   },
   computed: {
-    isAllable() {
-      return this.$store.getters.isAllable;
-    },
-    tv() {
-      return this.$store.getters.getTVByID(this.tvid);
-    },
+    // isAllable() {
+    //   return this.$store.getters.isAllable;
+    // },
+    // tv() {
+    //   return this.$store.getters.getTVByID(this.tvid);
+    // },
   },
   methods: {
-    getFormattedNumber(number) {
-      if (number > 9) {
-        return `${number}`;
-      } else {
-        return `${"0" + number}`;
-      }
-    },
-    getTotalNumber(season_number, total_number) {
-      if (season_number === 0) {
-        return `SP${this.getFormattedNumber(total_number)}`;
-      } else {
-        return `E${this.getFormattedNumber(total_number)}`;
-      }
-    },
-    markWatched(season_number, episode_number, isAll) {
-      this.$store.dispatch("markWatched", {
-        isAll: isAll,
-        info: {
-          tvid: this.tvid,
-          season_number: season_number,
-          episode_number: episode_number,
-        },
-      });
-    },
-    unmarkWatched(season_number, episode_number) {
-      this.$store.dispatch("unmarkWatched", {
-        tvid: this.tvid,
-        season_number: season_number,
-        episode_number: episode_number,
-      });
-    },
+    // getFormattedNumber(number) {
+    //   if (number > 9) {
+    //     return `${number}`;
+    //   } else {
+    //     return `${"0" + number}`;
+    //   }
+    // },
+    // getTotalNumber(season_number, total_number) {
+    //   if (season_number === 0) {
+    //     return `SP${this.getFormattedNumber(total_number)}`;
+    //   } else {
+    //     return `E${this.getFormattedNumber(total_number)}`;
+    //   }
+    // },
+    // markWatched(season_number, episode_number, isAll) {
+    //   this.$store.dispatch("markWatched", {
+    //     isAll: isAll,
+    //     info: {
+    //       tvid: this.tvid,
+    //       season_number: season_number,
+    //       episode_number: episode_number,
+    //     },
+    //   });
+    // },
+    // unmarkWatched(season_number, episode_number) {
+    //   this.$store.dispatch("unmarkWatched", {
+    //     tvid: this.tvid,
+    //     season_number: season_number,
+    //     episode_number: episode_number,
+    //   });
+    // },
 
     changeCarousel(index) {
       // console.log(this.$refs);
@@ -212,9 +222,9 @@ export default {
       // console.log("Carousel change", this.slide);
     },
 
-    dateCompare(date) {
-      return new Date(date).getTime() < new Date().getTime();
-    },
+    // dateCompare(date) {
+    //   return new Date(date).getTime() < new Date().getTime();
+    // },
   },
 };
 </script>

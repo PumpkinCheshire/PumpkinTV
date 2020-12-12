@@ -63,6 +63,13 @@ const store = new Vuex.Store({
             return state.userData.avatar
         },
 
+        getTVNumber: (state) => {
+            return state.userData.tvs.length
+        },
+        getMVNumber: (state) => {
+            return state.userData.mvs.length
+        },
+
         getTVByIdx: (state) => {
             return (tvidx) => {
                 return state.userData.tvs[tvidx]
@@ -79,6 +86,7 @@ const store = new Vuex.Store({
             return state.userData.tvs.reduce((acc, tv) => acc + (tv.isFinished ? tv.number_of_episodes : (tv.seasons.reduce((acc, season) => acc + (season.isFinished ? season.episode_count : season.episodes.filter(episode => episode.isFinished).length), 0))), 0)
         },
 
+
         getTotalWatchedMV: (state) => {
             return state.userData.mvs.reduce((acc, mv) => acc + (mv.isFinished ? 1 : 0), 0)
         },
@@ -93,6 +101,74 @@ const store = new Vuex.Store({
 
             return [month, day, hour]
         },
+
+        getMVWatchedTimeBy: (state) => {
+            return (para, num) => {
+                Date.prototype.getWeekNumber = function () {
+                    var d = new Date(
+                        Date.UTC(this.getFullYear(), this.getMonth(), this.getDate())
+                    );
+                    var dayNum = d.getUTCDay() || 7;
+                    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+                    var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+                    return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+                };
+
+                let mvs = state.userData.mvs.filter(mv => mv.isFinished && para == 0 ? (new Date(mv.finishedDate).getTime() > new Date().getTime() - 1.051e+10 && new Date(mv.finishedDate).getWeekNumber() == num) : para == 1 ? (new Date(mv.finishedDate).getTime() >= new Date().getTime() - 3.469e+10 && new Date(mv.finishedDate).getMonth() == num) : (new Date(mv.finishedDate).getFullYear() == num))
+
+                return Math.floor(mvs.reduce((acc, mv) => acc + mv.runtime, 0) / 60)
+            }
+        },
+
+        getMVWatchedNumberBy: (state) => {
+            return (para, num) => {
+                Date.prototype.getWeekNumber = function () {
+                    var d = new Date(
+                        Date.UTC(this.getFullYear(), this.getMonth(), this.getDate())
+                    );
+                    var dayNum = d.getUTCDay() || 7;
+                    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+                    var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+                    return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+                };
+
+                return state.userData.mvs.filter(mv => mv.isFinished && para == 0 ? (new Date(mv.finishedDate).getTime() > new Date().getTime() - 1.051e+10 && new Date(mv.finishedDate).getWeekNumber() == num) : para == 1 ? (new Date(mv.finishedDate).getTime() >= new Date().getTime() - 3.469e+10 && new Date(mv.finishedDate).getMonth() == num) : (new Date(mv.finishedDate).getFullYear() == num)).length
+
+            }
+        },
+
+        getTVWatchedNumberBy: (state) => {
+            return (para, num) => {
+                Date.prototype.getWeekNumber = function () {
+                    var d = new Date(
+                        Date.UTC(this.getFullYear(), this.getMonth(), this.getDate())
+                    );
+                    var dayNum = d.getUTCDay() || 7;
+                    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+                    var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+                    return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+                };
+
+                return state.userData.tvs.reduce((acc, tv) => acc + (tv.seasons.reduce((acc, season) => acc + season.episodes.filter(episode => episode.isFinished && para == 0 ? (new Date(episode.finishedDate).getTime() > new Date().getTime() - 1.051e+10 && new Date(episode.finishedDate).getWeekNumber() == num) : (para == 1 ? (new Date(episode.finishedDate).getTime() >= new Date().getTime() - 3.469e+10 && new Date(episode.finishedDate).getMonth() == num) : (new Date(episode.finishedDate).getFullYear() == num))).length, 0)), 0)
+            }
+        },
+
+        getTVWatchedTimeBy: (state) => {
+            return (para, num) => {
+                Date.prototype.getWeekNumber = function () {
+                    var d = new Date(
+                        Date.UTC(this.getFullYear(), this.getMonth(), this.getDate())
+                    );
+                    var dayNum = d.getUTCDay() || 7;
+                    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+                    var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+                    return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+                };
+
+                return state.userData.tvs.reduce((acc, tv) => acc + (tv.seasons.reduce((acc, season) => acc + season.episodes.filter(episode => episode.isFinished && para == 0 ? (new Date(episode.finishedDate).getTime() > new Date().getTime() - 1.051e+10 && new Date(episode.finishedDate).getWeekNumber() == num) : (para == 1 ? (new Date(episode.finishedDate).getTime() >= new Date().getTime() - 3.469e+10 && new Date(episode.finishedDate).getMonth() == num) : (new Date(episode.finishedDate).getFullYear() == num))).length, 0)), 0)
+            }
+        },
+
 
         getTVWatchedTime: () => {
             return [0, 0, 0]
@@ -270,6 +346,16 @@ const store = new Vuex.Store({
             state.userData.tvs[tvidx].finishedDate = curTime
         },
 
+        changeEpisodeFinishedDate(state, { tvidx: tvidx, seasonidx: seasonidx, episodeidx: episodeidx, date: date }) {
+            state.userData.tvs[tvidx].seasons[seasonidx].episodes[episodeidx].finishedDate = date
+            if (state.userData.tvs[tvidx].seasons[seasonidx].isFinished) {
+                state.userData.tvs[tvidx].seasons[seasonidx].finishedDate = Math.max.apply(Math, state.userData.tvs[tvidx].seasons[seasonidx].episodes.map(episode => new Date(episode.finishedDate).getTime()))
+            }
+            if (state.userData.tvs[tvidx].isfinished) {
+                state.userData.tvs[tvidx].finishedDate = Math.max.apply(Math, state.userData.tvs[tvidx].seasons.map(season => new Date(season.finishedDate).getTime()))
+            }
+        },
+
         markMVFinished(state, { mvidx: mvidx, curTime: curTime }) {
             state.userData.mvs[mvidx].isFinished = true
             state.userData.mvs[mvidx].finishedDate = curTime
@@ -373,7 +459,11 @@ const store = new Vuex.Store({
 
         setMVSort(state, sort) {
             state.mvSort = sort
-        }
+        },
+
+        changeMVFinishedDate(state, { mvidx: mvidx, date: date }) {
+            state.userData.mvs[mvidx].finishedDate = date
+        },
     },
 
     actions: {
@@ -561,6 +651,14 @@ const store = new Vuex.Store({
             context.commit("updateMode", tvidx)
         },
 
+        changeEpisodeFinishedDate(context, { tvidx: tvidx, season_number: season_number, episode_number: episode_number, date: date }) {
+            let seasonidx = context.getters.getSeasonIdxByNumber(tvidx, season_number)
+
+            let episodeidx = context.getters.getEpisodeIdxByNumber(tvidx, seasonidx, episode_number)
+
+            context.commit("changeEpisodeFinishedDate", { tvidx, seasonidx, episodeidx, date })
+        },
+
         markWatchedMV(context, mvid) {
             var curTime = JSON.parse(JSON.stringify(new Date()))
             let mvidx = context.getters.getMVIdxByID(mvid)
@@ -609,7 +707,13 @@ const store = new Vuex.Store({
         setProgress(context, { tvid: tvid, percentage: percentage }) {
             let tvidx = context.getters.getTVIdxByID(tvid)
             context.commit("setProgress", { tvidx, percentage })
-        }
+        },
+
+        changeMVFinishedDate(context, { mvidx: mvidx, date: date }) {
+            context.commit("changeMVFinishedDate", { mvidx, date })
+        },
+
+
 
     },
 

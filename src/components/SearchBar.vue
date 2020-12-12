@@ -2,7 +2,7 @@
   <el-input
     class="inline-input"
     v-model="search"
-    placeholder="The TV show name"
+    :placeholder="`The ${tmode ? 'TV show' : 'Movie'} name`"
     :trigger-on-focus="false"
     :debounce="900"
     @input="handleSearch"
@@ -19,14 +19,15 @@ export default {
       search: "",
     };
   },
-  mounted() {
-    this.$store.commit("setTVSearch", "");
-    this.$store.commit("setMVSearch", "");
+  computed: {
+    tmode() {
+      return this.$store.getters.getMode;
+    },
   },
   methods: {
     handleSearch() {
       this.$store.commit(
-        this.$store.getters.getMode ? "setTVSearch" : "setMVSearch",
+        this.tmode ? "setTVSearch" : "setMVSearch",
         this.search
       );
     },

@@ -22,7 +22,8 @@
         :autoplay="true"
       >
         <el-carousel-item key="tv">
-          <el-row>
+          <StatCarousel v-bind:tmode="true" />
+          <!-- <el-row>
             <el-col :span="12">
               <el-row class="drawer-title">
                 <span>TV Watched</span>
@@ -45,10 +46,11 @@
           <el-row class="drawer-number"
             ><span>{{ $store.getters.getUserData.tvs.length }}</span></el-row
           >
-          <el-row><v-chart :options="tvsChart" /></el-row>
+          <el-row><v-chart :options="tvsChart" /></el-row> -->
         </el-carousel-item>
         <el-carousel-item key="mv">
-          <el-row>
+          <StatCarousel v-bind:tmode="false" />
+          <!-- <el-row>
             <el-col :span="12">
               <el-row class="drawer-title">
                 <span>Movie Watched</span>
@@ -71,7 +73,7 @@
           <el-row class="drawer-number"
             ><span>{{ $store.getters.getUserData.mvs.length }}</span></el-row
           >
-          <el-row><v-chart :options="mvsChart" /></el-row>
+          <el-row><v-chart :options="mvsChart" /></el-row> -->
         </el-carousel-item>
       </el-carousel>
     </el-drawer>
@@ -80,11 +82,11 @@
 
 <script>
 import "echarts/lib/chart/pie";
-
+import StatCarousel from "./StatCarousel.vue";
 export default {
   name: "StatDrawer",
   components: {
-    // "v-chart": ECharts,
+    StatCarousel,
   },
   data() {
     return {

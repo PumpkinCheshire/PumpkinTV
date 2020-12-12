@@ -22,3 +22,14 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+
+### TODO
+
+* [] API-key
+* [] More Filters
+* [] Tags on shows & movies
+* [] TV show time (wait for tmdb episode time update)
+* [] Avatar upload
+* [] Watch history
+* [] Donut of company / tags 
