@@ -116,8 +116,11 @@ export default {
     return {
       finishedDate: "",
       pickerOptions: {
-        disabledDate(time) {
-          return time.getTime() > Date.now();
+        disabledDate: (time) => {
+          return (
+            time.getTime() > Date.now() ||
+            time.getTime() < new Date(this.episode.air_date).getTime() - 8.64e7
+          );
         },
         shortcuts: [
           {
@@ -178,6 +181,7 @@ export default {
       }
     },
     markWatched(season_number, episode_number, isAll) {
+      this.finishedDate = new Date();
       this.$store.dispatch("markWatched", {
         isAll: isAll,
         info: {

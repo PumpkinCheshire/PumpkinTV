@@ -253,6 +253,12 @@ export default {
 
     mvsTimeChart() {
       return {
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            type: "shadow",
+          },
+        },
         xAxis: {
           data: Array.from({ length: 12 }, (v, k) =>
             this.scaleidx == 0
@@ -269,6 +275,10 @@ export default {
         series: {
           name: "time",
           type: "bar",
+          label: {
+            show: true,
+            position: "top",
+          },
           data: Array.from({ length: 12 }, (v, k) =>
             this.$store.getters.getMVWatchedTimeBy(
               this.scaleidx,
@@ -285,6 +295,12 @@ export default {
 
     tvsTimeChart() {
       return {
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            type: "shadow",
+          },
+        },
         xAxis: {
           data: Array.from({ length: 12 }, (v, k) =>
             this.scaleidx == 0
@@ -301,6 +317,10 @@ export default {
         series: {
           name: "time",
           type: "bar",
+          label: {
+            show: true,
+            position: "top",
+          },
           data: Array.from({ length: 12 }, (v, k) =>
             this.$store.getters.getTVWatchedTimeBy(
               this.scaleidx,
@@ -317,6 +337,12 @@ export default {
 
     mvsNumberChart() {
       return {
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            type: "shadow",
+          },
+        },
         xAxis: {
           data: Array.from({ length: 12 }, (v, k) =>
             this.scaleidx == 0
@@ -333,6 +359,10 @@ export default {
         series: {
           name: "time",
           type: "bar",
+          label: {
+            show: true,
+            position: "top",
+          },
           data: Array.from({ length: 12 }, (v, k) =>
             this.$store.getters.getMVWatchedNumberBy(
               this.scaleidx,
@@ -349,6 +379,12 @@ export default {
 
     tvsNumberChart() {
       return {
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            type: "shadow",
+          },
+        },
         xAxis: {
           data: Array.from({ length: 12 }, (v, k) =>
             this.scaleidx == 0
@@ -365,6 +401,10 @@ export default {
         series: {
           name: "time",
           type: "bar",
+          label: {
+            show: true,
+            position: "top",
+          },
           data: Array.from({ length: 12 }, (v, k) =>
             this.$store.getters.getTVWatchedNumberBy(
               this.scaleidx,
