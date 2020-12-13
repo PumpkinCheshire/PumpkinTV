@@ -59,7 +59,7 @@ export default {
       let sortMethods = {
         LE: (a, b) =>
           new Date(b.finishedDate ? b.finishedDate : b.addDate).getTime() -
-          new Date(b.finishedDate ? b.finishedDate : b.addDate).getTime(),
+          new Date(a.finishedDate ? a.finishedDate : a.addDate).getTime(),
         AZ: (a, b) => (a.title > b.title ? 1 : b.title > a.title ? -1 : 0),
         ZA: (a, b) => (a.title < b.title ? 1 : b.title < a.title ? -1 : 0),
         NO: (a, b) => {

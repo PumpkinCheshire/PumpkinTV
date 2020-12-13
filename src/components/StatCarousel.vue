@@ -253,12 +253,6 @@ export default {
 
     mvsTimeChart() {
       return {
-        tooltip: {
-          trigger: "axis",
-          axisPointer: {
-            type: "shadow",
-          },
-        },
         xAxis: {
           data: Array.from({ length: 12 }, (v, k) =>
             this.scaleidx == 0
@@ -295,12 +289,6 @@ export default {
 
     tvsTimeChart() {
       return {
-        tooltip: {
-          trigger: "axis",
-          axisPointer: {
-            type: "shadow",
-          },
-        },
         xAxis: {
           data: Array.from({ length: 12 }, (v, k) =>
             this.scaleidx == 0
@@ -337,12 +325,6 @@ export default {
 
     mvsNumberChart() {
       return {
-        tooltip: {
-          trigger: "axis",
-          axisPointer: {
-            type: "shadow",
-          },
-        },
         xAxis: {
           data: Array.from({ length: 12 }, (v, k) =>
             this.scaleidx == 0
@@ -379,12 +361,6 @@ export default {
 
     tvsNumberChart() {
       return {
-        tooltip: {
-          trigger: "axis",
-          axisPointer: {
-            type: "shadow",
-          },
-        },
         xAxis: {
           data: Array.from({ length: 12 }, (v, k) =>
             this.scaleidx == 0

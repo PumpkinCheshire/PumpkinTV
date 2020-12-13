@@ -83,7 +83,7 @@ const store = new Vuex.Store({
         },
 
         getTotalWatchedTV: (state) => {
-            return state.userData.tvs.reduce((acc, tv) => acc + (tv.isFinished ? tv.number_of_episodes : (tv.seasons.reduce((acc, season) => acc + (season.isFinished ? season.episode_count : season.episodes.filter(episode => episode.isFinished).length), 0))), 0)
+            return state.userData.tvs.reduce((acc, tv) => acc + (tv.seasons.reduce((acc, season) => acc + season.episodes.filter(episode => episode.isFinished).length, 0)), 0)
         },
 
 
