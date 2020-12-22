@@ -15,6 +15,9 @@
       <el-row>
         <el-image :src="avatar" class="avatar-large"></el-image>
       </el-row>
+      <el-row class="drawer-title"
+        ><span>{{ $store.getters.getUsername }}</span></el-row
+      >
       <el-divider></el-divider>
       <el-carousel
         height="calc(100vh - 167px)"
@@ -105,7 +108,7 @@ export default {
   },
   computed: {
     avatar() {
-      this.$store.commit("addAvatar");
+      // this.$store.commit("addAvatar");
       return this.$store.getters.getAvatar;
     },
 

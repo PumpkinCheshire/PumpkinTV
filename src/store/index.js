@@ -4,6 +4,7 @@ import VuexPersistence from 'vuex-persist'
 import localforage from 'localforage'
 // import createPersistedState from 'vuex-persistedstate'
 import _ from "lodash"
+// import shared from '../shared/shared.js'
 
 
 Vue.use(Vuex);
@@ -11,11 +12,15 @@ Vue.use(Vuex);
 const store = new Vuex.Store({
     state: {
         userData: {
-            api_key: "49ae83b320a43c660d6fa4b4dae9ea79",
-            avatar: "",
             tvs: [],
             mvs: [],
         },
+        api_key: "",
+        username: "",
+        avatar: "",
+        token: "",
+        gist: "",
+        loginCode: "",
         mode: false,
         tvSort: "LE",
         tvSearch: "",
@@ -26,6 +31,15 @@ const store = new Vuex.Store({
 
     },
     getters: {
+        // getLoginCode: (state) => {
+        //     return state.loginCode
+        // },
+        getGist: (state) => {
+            return state.gist
+        },
+        getToken: (state) => {
+            return state.token
+        },
         getMode: (state) => {
             return state.mode
         },
@@ -56,11 +70,15 @@ const store = new Vuex.Store({
 
 
         getAPI: (state) => {
-            return state.userData.api_key
+            return state.api_key
+        },
+
+        getUsername: (state) => {
+            return state.username
         },
 
         getAvatar: (state) => {
-            return state.userData.avatar
+            return state.avatar
         },
 
         getTVNumber: (state) => {
@@ -149,6 +167,8 @@ const store = new Vuex.Store({
                     return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
                 };
 
+                console.log("Getting TV watched Time by", para, num, state.userData.tvs.reduce((acc, tv) => acc + (tv.seasons.reduce((acc, season) => acc + season.episodes.filter(episode => episode.isFinished && para == 0 ? (new Date(episode.finishedDate).getTime() > new Date().getTime() - 1.051e+10 && new Date(episode.finishedDate).getWeekNumber() == num) : (para == 1 ? (new Date(episode.finishedDate).getTime() >= new Date().getTime() - 3.469e+10 && new Date(episode.finishedDate).getMonth() == num) : (new Date(episode.finishedDate).getFullYear() == num))).length, 0)), 0))
+
                 return state.userData.tvs.reduce((acc, tv) => acc + (tv.seasons.reduce((acc, season) => acc + season.episodes.filter(episode => episode.isFinished && para == 0 ? (new Date(episode.finishedDate).getTime() > new Date().getTime() - 1.051e+10 && new Date(episode.finishedDate).getWeekNumber() == num) : (para == 1 ? (new Date(episode.finishedDate).getTime() >= new Date().getTime() - 3.469e+10 && new Date(episode.finishedDate).getMonth() == num) : (new Date(episode.finishedDate).getFullYear() == num))).length, 0)), 0)
             }
         },
@@ -165,10 +185,11 @@ const store = new Vuex.Store({
                     return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
                 };
 
+
+
                 return state.userData.tvs.reduce((acc, tv) => acc + (tv.seasons.reduce((acc, season) => acc + season.episodes.filter(episode => episode.isFinished && para == 0 ? (new Date(episode.finishedDate).getTime() > new Date().getTime() - 1.051e+10 && new Date(episode.finishedDate).getWeekNumber() == num) : (para == 1 ? (new Date(episode.finishedDate).getTime() >= new Date().getTime() - 3.469e+10 && new Date(episode.finishedDate).getMonth() == num) : (new Date(episode.finishedDate).getFullYear() == num))).length, 0)), 0)
             }
         },
-
 
         getTVWatchedTime: () => {
             return [0, 0, 0]
@@ -246,6 +267,30 @@ const store = new Vuex.Store({
             return state.userData
         },
 
+        getSaveData: (state) => {
+            return [state.userData.tvs.map(tv => ([
+                tv.id,
+                tv.mode,
+                new Date(tv.addDate).toISOString().slice(0, 10),
+                tv.finishedDate == null ? "" : new Date(tv.finishedDate).toISOString().slice(0, 10),
+                tv.where_am_i.id,
+                tv.seasons.map(season => ([
+                    season.finishedDate == null ? "" : new Date(season.finishedDate).toISOString().slice(0, 10),
+                    season.confidentEpisode,
+                    season.episodes.map(episode => (
+                        episode.finishedDate == null ? "" : new Date(episode.finishedDate).toISOString().slice(0, 10)
+                    ))
+                ]))
+            ])),
+            state.userData.mvs.map(mv => ([
+                mv.id,
+                mv.mode,
+                new Date(mv.addDate).toISOString().slice(0, 10),
+                mv.finishedDate == null ? "" : new Date(mv.finishedDate).toISOString().slice(0, 10)
+            ]))
+            ]
+        },
+
         isAddable(state) {
             return (id) => {
                 if (id === 0) {
@@ -298,6 +343,22 @@ const store = new Vuex.Store({
     },
 
     mutations: {
+        setGist(state, id) {
+            state.gist = id
+        },
+        setAccessToken(state, token) {
+            state.token = token
+        },
+        // setLoginCode(state, code) {
+        //     state.loginCode = code
+        // },
+        setApiKey(state, api_key) {
+            api_key = "49ae83b320a43c660d6fa4b4dae9ea79"
+            state.api_key = api_key
+        },
+        setUsername(state, username) {
+            state.username = username
+        },
         changeMode(state) {
             state.mode = !state.mode
             state.tvSearch = ""
@@ -315,9 +376,10 @@ const store = new Vuex.Store({
 
         },
 
-        addAvatar(state) {
-            state.userData.avatar = require("@/assets/img/avatar.png")
+        setAvatar(state, url) {
+            state.avatar = url
         },
+
         loadUserData(state, newUserData) {
             state.userData = newUserData
         },
@@ -353,6 +415,9 @@ const store = new Vuex.Store({
             }
             if (state.userData.tvs[tvidx].isfinished) {
                 state.userData.tvs[tvidx].finishedDate = Math.max.apply(Math, state.userData.tvs[tvidx].seasons.map(season => new Date(season.finishedDate).getTime()))
+            }
+            if (state.userData.tvs[tvidx].seasons[seasonidx].episodes[episodeidx].id == state.userData.tvs[tvidx].where_am_i.id) {
+                state.userData.tvs[tvidx].where_am_i.finishedDate = date
             }
         },
 
@@ -390,6 +455,8 @@ const store = new Vuex.Store({
             if (state.userData.tvs[tvidx].where_am_i == undefined) {
                 state.userData.tvs[tvidx].where_am_i = state.userData.tvs[tvidx].seasons.find(season => season.season_number === 1).episodes.find(episode => episode.episode_number === 1)
             }
+            console.log("seted where am i in", state.userData.tvs[tvidx].name)
+            console.log("I am", state.userData.tvs[tvidx])
         },
 
         updateMode(state, tvidx) {
@@ -467,6 +534,110 @@ const store = new Vuex.Store({
     },
 
     actions: {
+        async setAccessToken(context, code) {
+            console.log("start to process token", code)
+            fetch(`https://pumpkincors.herokuapp.com/http://github.com/login/oauth/access_token?client_id=4a56fb45e857832a9fae&client_secret=bf8e1facecb0f2dc01f4b7c40b594fd3f12cd285&code=${code}`).then(res => res.text()).then(url => {
+                console.log("got token", url)
+                context.commit("setAccessToken", new URLSearchParams(url).get("access_token"))
+                context.dispatch("setGist")
+                context.dispatch("setUsername")
+            });
+        },
+
+        async setGist(context) {
+            fetch("https://api.github.com/gists", {
+                method: "GET",
+                headers: {
+                    Accept: "application/vnd.github.v3+json",
+                    Authorization: `bearer ${context.getters.getToken}`
+                }
+            }).then((res) => res.json()).then(json => {
+                if (json.some(gist => "PumpkinTVSave.json" in gist.files)) {
+                    context.commit("setGist", json.find(gist => "PumpkinTVSave.json" in gist.files).id)
+                }
+                else {
+                    fetch("https://api.github.com/gists", {
+                        method: "POST",
+                        headers: {
+                            Accept: "application/vnd.github.v3+json",
+                            Authorization: `bearer ${context.getters.getToken} `,
+                        },
+                        body: JSON.stringify({
+                            description: "PumpkinTV saved progress",
+                            public: false,
+                            files: {
+                                ["PumpkinTVSave.json"]: {
+                                    content: "",
+                                },
+                            },
+                        }),
+                    }).then((res) => res.json()).then((json) => context.commit("setGist", json.id));
+                }
+            })
+
+        },
+
+        setApiKey(context, api_key) {
+            context.commit("setApiKey", api_key)
+        },
+        async setUsername(context) {
+            fetch("https://api.github.com/user", {
+                method: "GET",
+                headers: {
+                    // "Access-Control-Allow-Origin": "*",
+                    Accept: "application/vnd.github.v3+json",
+                    Authorization: `bearer ${context.getters.getToken}`
+                }
+            }).then((res) => res.json()).then(json => {
+                context.commit("setUsername", json.login)
+                context.commit("setAvatar", json.avatar_url)
+            })
+        },
+
+        async recoverFromSave(context, saveData) {
+            const genUpdater = require("../shared/shared.js").default.genUpdater
+            const genUpdaterMV = require("../shared/shared.js").default.genUpdaterMV
+            var tvs = saveData[0]
+            var mvs = saveData[1]
+            var newTVs = []
+            var newMVs = []
+
+            await Promise.all(tvs.map(async (tv) => {
+                var genTV = await genUpdater(tv[0]);
+                genTV.isFinished = tv[3] == "" ? false : true
+                genTV.mode = tv[1]
+                genTV.addDate = new Date(tv[2])
+                genTV.finishedDate = tv[3] == "" ? null : new Date(tv[3])
+                genTV.where_am_i = genTV.seasons.find(season => season.episodes.some(episode => episode.id == tv[4])).episodes.find(episode => episode.id == tv[4])
+                await Promise.all(genTV.seasons.map(async (genSeason, seasonidx) => {
+                    if (seasonidx < tv[5].length) {
+                        genSeason.isFinished = tv[5][seasonidx][0] == "" ? false : true
+                        genSeason.finishedDate = tv[5][seasonidx][0] == "" ? null : new Date(tv[5][seasonidx][0])
+                        genSeason.confidentEpisode = tv[5][seasonidx][1]
+                        await Promise.all(genSeason.episodes.map(async (genEpisode, episodeidx) => {
+                            genEpisode.isFinished = tv[5][seasonidx][2][episodeidx] == "" ? false : true
+                            genEpisode.finishedDate = tv[5][seasonidx][2][episodeidx] == "" ? null : new Date(tv[5][seasonidx][2][episodeidx])
+                        }))
+                    }
+                }))
+                newTVs.push(genTV)
+            }))
+
+            await Promise.all(mvs.map(async (mv) => {
+                var genMV = await genUpdaterMV(mv[0]);
+                genMV.isFinished = mv[3] == "" ? false : true
+                genMV.mode = mv[1]
+                genMV.finishedDate = mv[3] == "" ? null : JSON.stringify(new Date(mv[3]))
+                genMV.addDate = JSON.stringify(new Date(mv[2]))
+
+                newMVs.push(genMV)
+            })
+            )
+            var userData = { tvs: newTVs, mvs: newMVs }
+            console.log("I am userData", userData)
+            context.commit("loadUserData", userData)
+        },
+
         async addTV(context, tvid) {
 
             const genUpdater = require("../shared/shared.js").default.genUpdater

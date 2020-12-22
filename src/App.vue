@@ -37,6 +37,7 @@
         </el-main>
       </el-container>
     </el-container>
+    <Init />
   </div>
 </template>
 
@@ -47,6 +48,7 @@ import FunctionBar from "./components/FunctionBar.vue";
 import TVNavMenu from "./components/TV/TVNavMenu.vue";
 import MVNavMenu from "./components/MV/MVNavMenu.vue";
 import SearchBar from "./components/SearchBar.vue";
+import Init from "./components/Init.vue";
 
 export default {
   name: "app",
@@ -57,6 +59,7 @@ export default {
     TVNavMenu,
     MVNavMenu,
     SearchBar,
+    Init,
   },
 
   computed: {

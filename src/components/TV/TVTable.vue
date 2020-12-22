@@ -35,7 +35,6 @@ export default {
   methods: {
     load() {
       this.loader += 2;
-      // console.log("loader", this.loader);
     },
   },
   computed: {

@@ -6,6 +6,8 @@
     <el-dropdown-menu slot="dropdown">
       <el-dropdown-item command="dl">Download Backup</el-dropdown-item>
       <el-dropdown-item command="ul">Recover from Backup</el-dropdown-item>
+      <el-dropdown-item command="cdl">Sync to Gist</el-dropdown-item>
+      <el-dropdown-item command="cul">Recover from Gist</el-dropdown-item>
     </el-dropdown-menu>
     <el-dialog
       title="Upload JSON Backup File"
@@ -40,6 +42,7 @@
 
 <script>
 // import shared from "../shared/shared.js";
+// import { Octokit } from "@octokit/core";
 
 export default {
   name: "BackupRecover",
@@ -55,14 +58,54 @@ export default {
   },
   methods: {
     dlJson() {
-      const data = JSON.stringify(this.$store.getters.getUserData);
-      const blob = new Blob([data], { type: "text/plain" });
-      const a = document.createElement("a");
-      a.download = "userData.json";
+      let data = JSON.stringify(this.$store.getters.getSaveData);
+      let blob = new Blob([data], { type: "text/plain" });
+      let a = document.createElement("a");
+      a.download = "PumpkinTVSave.json";
       a.href = window.URL.createObjectURL(blob);
       a.click();
       URL.revokeObjectURL(a.href);
     },
+
+    async dlGist() {
+      fetch(`https://api.github.com/gists/${this.$store.getters.getGist}`, {
+        method: "PATCH",
+        headers: {
+          Accept: "application/vnd.github.v3+json",
+          Authorization: `bearer ${this.$store.getters.getToken} `,
+        },
+        body: JSON.stringify({
+          description: "PumpkinTV saved progress",
+          public: false,
+          files: {
+            ["PumpkinTVSave.json"]: {
+              content: JSON.stringify(this.$store.getters.getSaveData),
+            },
+          },
+        }),
+      })
+        .then((res) => res.json())
+        .then((json) => console.log(json));
+    },
+
+    async ulGist() {
+      fetch(`https://api.github.com/gists/${this.$store.getters.getGist}`, {
+        method: "GET",
+        headers: {
+          // "Access-Control-Allow-Origin": "*",
+          Accept: "application/vnd.github.v3+json",
+          Authorization: `bearer ${this.$store.getters.getToken}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((json) =>
+          this.$store.dispatch(
+            "recoverFromSave",
+            JSON.parse(json.files["PumpkinTVSave.json"].content)
+          )
+        );
+    },
+
     handleFile(param) {
       console.log(param);
 
@@ -70,7 +113,8 @@ export default {
       reader.readAsText(param.file);
       reader.onload = async (e) => {
         try {
-          this.$store.commit("loadUserData", JSON.parse(e.target.result));
+          // this.$store.commit("loadUserData", JSON.parse(e.target.result));
+          this.$store.commit("recoverFromSave", JSON.parse(e.target.result));
           console.log(this.$store.getters.getUserData);
           // this.saveUserData(this.$store.getters.getUserData);
           await param.onSuccess();
@@ -84,6 +128,10 @@ export default {
         this.dlJson();
       } else if (command === "ul") {
         this.dialogTableVisible = true;
+      } else if (command == "cdl") {
+        this.dlGist();
+      } else if (command == "cul") {
+        this.ulGist();
       }
     },
   },
