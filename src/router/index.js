@@ -11,7 +11,7 @@ const routes = [
     { path: '/oauth', name: "oauth", component: Oauth }
 ]
 const router = new VueRouter({
-    mode: 'history',
+    // mode: 'history',
     routes: routes
 });
 
