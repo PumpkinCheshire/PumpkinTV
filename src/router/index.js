@@ -11,6 +11,7 @@ const routes = [
     { path: '/oauth', name: "oauth", component: Oauth }
 ]
 const router = new VueRouter({
+    base: "/PumpkinTV/",
     // mode: 'history',
     routes: routes
 });
