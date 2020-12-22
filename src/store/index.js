@@ -31,9 +31,6 @@ const store = new Vuex.Store({
 
     },
     getters: {
-        // getLoginCode: (state) => {
-        //     return state.loginCode
-        // },
         getGist: (state) => {
             return state.gist
         },
@@ -263,6 +260,18 @@ const store = new Vuex.Store({
             }
         },
 
+        getTVLastUpDate: (state) => {
+            return (tvidx) => {
+                return state.userData.tvs[tvidx].lastUpDate
+            }
+        },
+
+        getMVLastUpDate: (state) => {
+            return (mvidx) => {
+                return state.userData.mvs[mvidx].lastUpDate
+            }
+        },
+
         getUserData: (state) => {
             return state.userData
         },
@@ -386,10 +395,12 @@ const store = new Vuex.Store({
 
         updateTV(state, { updater: updater, tvidx: tvidx }) {
             _.merge(state.userData.tvs[tvidx], updater)
+            state.userData.tvs[tvidx].lastUpDate = JSON.parse(JSON.stringify(new Date()))
         },
 
         updateMV(state, { updater: updater, mvidx: mvidx }) {
             _.merge(state.userData.mvs[mvidx], updater)
+            state.userData.mvs[mvidx].lastUpDate = JSON.parse(JSON.stringify(new Date()))
         },
 
         markEpisodeFinished(state, { tvidx: tvidx, seasonidx: seasonidx, episodeidx: episodeidx, curTime: curTime }) {
@@ -606,17 +617,18 @@ const store = new Vuex.Store({
                 var genTV = await genUpdater(tv[0]);
                 genTV.isFinished = tv[3] == "" ? false : true
                 genTV.mode = tv[1]
-                genTV.addDate = new Date(tv[2])
-                genTV.finishedDate = tv[3] == "" ? null : new Date(tv[3])
+                genTV.addDate = JSON.parse(JSON.stringify(new Date(tv[2])))
+                genTV.finishedDate = tv[3] == "" ? null : JSON.parse(JSON.stringify(new Date(tv[3])))
                 genTV.where_am_i = genTV.seasons.find(season => season.episodes.some(episode => episode.id == tv[4])).episodes.find(episode => episode.id == tv[4])
+                genTV.lastUpDate = JSON.parse(JSON.stringify(new Date()))
                 await Promise.all(genTV.seasons.map(async (genSeason, seasonidx) => {
                     if (seasonidx < tv[5].length) {
                         genSeason.isFinished = tv[5][seasonidx][0] == "" ? false : true
-                        genSeason.finishedDate = tv[5][seasonidx][0] == "" ? null : new Date(tv[5][seasonidx][0])
+                        genSeason.finishedDate = tv[5][seasonidx][0] == "" ? null : JSON.parse(JSON.stringify(new Date(tv[5][seasonidx][0])))
                         genSeason.confidentEpisode = tv[5][seasonidx][1]
                         await Promise.all(genSeason.episodes.map(async (genEpisode, episodeidx) => {
                             genEpisode.isFinished = tv[5][seasonidx][2][episodeidx] == "" ? false : true
-                            genEpisode.finishedDate = tv[5][seasonidx][2][episodeidx] == "" ? null : new Date(tv[5][seasonidx][2][episodeidx])
+                            genEpisode.finishedDate = tv[5][seasonidx][2][episodeidx] == "" ? null : JSON.parse(JSON.stringify(new Date(tv[5][seasonidx][2][episodeidx])))
                         }))
                     }
                 }))
@@ -627,8 +639,9 @@ const store = new Vuex.Store({
                 var genMV = await genUpdaterMV(mv[0]);
                 genMV.isFinished = mv[3] == "" ? false : true
                 genMV.mode = mv[1]
-                genMV.finishedDate = mv[3] == "" ? null : JSON.stringify(new Date(mv[3]))
-                genMV.addDate = JSON.stringify(new Date(mv[2]))
+                genMV.finishedDate = mv[3] == "" ? null : JSON.parse(JSON.stringify(new Date(mv[3])))
+                genMV.addDate = JSON.parse(JSON.stringify(new Date(mv[2])))
+                genMV.lastUpDate = JSON.parse(JSON.stringify(new Date()))
 
                 newMVs.push(genMV)
             })
@@ -654,6 +667,7 @@ const store = new Vuex.Store({
                     tv.mode = "catching"
                     tv.finishedDate = null
                     tv.addDate = JSON.parse(JSON.stringify(new Date()))
+                    tv.lastUpDate = JSON.parse(JSON.stringify(new Date()))
 
                     await Promise.all(tv.seasons.map(async (season) => {
                         season.isFinished = false
@@ -714,25 +728,10 @@ const store = new Vuex.Store({
                 context.commit("updateTV", { updater, tvidx })
             }
             else {
-                const bent = require("bent")
-                const getJson = bent("json")
-                let changeList = []
-                let page = 1
-                while (page) {
-                    let change = await getJson(`https://api.themoviedb.org/3/tv/changes?api_key=${context.getters.getAPI}&page=${page}`)
 
-                    if (change.results.length >= 100) {
-                        page++
-                        changeList.concat(change.results)
-                    }
-                    else {
-                        break;
-                    }
 
-                }
-
-                if (!changeList.map(tv => tv.id).includes(tvid)) {
-                    console.log("no change no update")
+                if (new Date(context.getters.getTVLastUpDate(tvidx).getTime() > new Date().getTime() - 24 * 60 * 60 * 1000)) {
+                    console.log("too soon to update")
                 }
                 else {
                     const genUpdater = require("../shared/shared.js").default.genUpdater
@@ -745,24 +744,24 @@ const store = new Vuex.Store({
 
         async updateMV(context, mvidx) {
             var mvid = context.getters.getMVIDByIdx(mvidx)
-            const bent = require("bent")
-            const getJson = bent("json")
-            let changeList = []
-            let page = 1
-            while (page) {
-                let change = await getJson(`https://api.themoviedb.org/3/movie/changes?api_key=${context.getters.getAPI}&page=${page}`)
+            // const bent = require("bent")
+            // const getJson = bent("json")
+            // let changeList = []
+            // let page = 1
+            // while (page) {
+            //     let change = await getJson(`https://api.themoviedb.org/3/movie/changes?api_key=${context.getters.getAPI}&page=${page}`)
 
-                if (change.results.length >= 100) {
-                    page++
-                    changeList.concat(change.results)
-                }
-                else {
-                    break;
-                }
+            //     if (change.results.length >= 100) {
+            //         page++
+            //         changeList.concat(change.results)
+            //     }
+            //     else {
+            //         break;
+            //     }
 
-            }
+            // }
 
-            if (!changeList.map(mv => mv.id).includes(mvid)) {
+            if (new Date(context.getters.getMVLastUpDate(mvidx).getTime() > new Date().getTime() - 24 * 60 * 60 * 1000)) {
                 console.log("no change no update")
             }
             else {

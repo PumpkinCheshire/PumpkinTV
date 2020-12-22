@@ -54,6 +54,7 @@ export default {
   methods: {
     handleForm() {
       this.$store.dispatch("setApiKey", this.form.apiKey);
+      this.apiKeyExist = this.$store.getters.getAPI == "";
     },
   },
 };
