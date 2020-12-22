@@ -22,7 +22,7 @@
         <el-button
           ><a
             href="https://github.com/login/oauth/authorize?
-  client_id=4a56fb45e857832a9fae&redirect_uri=https://pumpkincheshire.github.io/PumpkinTV/oauth&scope=gist"
+  client_id=4a56fb45e857832a9fae&redirect_uri=https://pumpkincheshire.github.io/PumpkinTV/#/oauth&scope=gist"
             >Github</a
           ></el-button
         >
