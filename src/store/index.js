@@ -730,7 +730,7 @@ const store = new Vuex.Store({
             else {
 
 
-                if (new Date(context.getters.getTVLastUpDate(tvidx).getTime() > new Date().getTime() - 24 * 60 * 60 * 1000)) {
+                if (new Date(context.getters.getTVLastUpDate(tvidx)).getTime() > new Date().getTime() - 24 * 60 * 60 * 1000) {
                     console.log("too soon to update")
                 }
                 else {
