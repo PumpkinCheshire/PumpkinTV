@@ -164,8 +164,6 @@ const store = new Vuex.Store({
                     return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
                 };
 
-                console.log("Getting TV watched Time by", para, num, state.userData.tvs.reduce((acc, tv) => acc + (tv.seasons.reduce((acc, season) => acc + season.episodes.filter(episode => episode.isFinished && para == 0 ? (new Date(episode.finishedDate).getTime() > new Date().getTime() - 1.051e+10 && new Date(episode.finishedDate).getWeekNumber() == num) : (para == 1 ? (new Date(episode.finishedDate).getTime() >= new Date().getTime() - 3.469e+10 && new Date(episode.finishedDate).getMonth() == num) : (new Date(episode.finishedDate).getFullYear() == num))).length, 0)), 0))
-
                 return state.userData.tvs.reduce((acc, tv) => acc + (tv.seasons.reduce((acc, season) => acc + season.episodes.filter(episode => episode.isFinished && para == 0 ? (new Date(episode.finishedDate).getTime() > new Date().getTime() - 1.051e+10 && new Date(episode.finishedDate).getWeekNumber() == num) : (para == 1 ? (new Date(episode.finishedDate).getTime() >= new Date().getTime() - 3.469e+10 && new Date(episode.finishedDate).getMonth() == num) : (new Date(episode.finishedDate).getFullYear() == num))).length, 0)), 0)
             }
         },
